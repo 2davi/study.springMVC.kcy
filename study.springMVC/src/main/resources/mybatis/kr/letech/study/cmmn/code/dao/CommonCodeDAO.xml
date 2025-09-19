@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.letech.study.cmmn.code.dao.CommonCodeDAO">
+
+	<select id="selectCodeList" parameterType="List" resultType="kr.letech.study.cmmn.code.vo.CommonCodeVO">
+		SELECT CMMN_GRP_CD
+			 , CMMN_CD
+			 , CMMN_NM
+			 , CMMN_DESC
+			 , RGST_ID
+			 , RGST_DT
+			 , UPDT_ID
+			 , UPDT_DT
+			 , DEL_YN
+		  FROM COMMON_CODE
+		 WHERE DEL_YN = 'N'
+		   AND CMMN_GRP_CD IN
+		   <foreach item="cmmnGrpCd" collection="cmmnCodeParams" open="(" separator="," close=")">
+		   	   #{cmmnGrpCd}
+		   </foreach>
+	</select>
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO">
+	<!-- 사용자정보 조회 -->
+	<select id="selectUser" resultType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO.selectUser() - KCY */
+		
+		SELECT USER_ID AS userId
+			 , USER_PW AS userPw
+			 , USER_NM AS userNm
+		  FROM USER
+		 WHERE USER_ID = #{userId}
+		   and del_yn = 'N'
+	</select>
+	
+	<!-- 사용자권한목록 조회 -->
+	<select id="selectUserAuthList" resultType="string">
+	/** kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO.selectUserAuthList() - KCY */
+		
+		SELECT USER_ROLE
+		  FROM USER_ROLE
+		 WHERE USER_ID = #{userId}
+		   and del_yn = 'N'
+	</select>
+	
+	<!-- 
+		회원가입 로직에서, user권한도 추가해줘야 하고
+		USER_ROLE 테이블에ㅓㅅ DEL_YN 컬럼 추가
+	 -->
+</mapper>

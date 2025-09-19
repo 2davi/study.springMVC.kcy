@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+ * <pre>
+ * 
+ * </pre>
+ * 
+ * < 개정이력 >
+ * 
+ *  수정일			수정자			수정내용
+ *  =================================================
+ *  2025-09-12		KCY				최초 생성
+ *  2025-09-15		KCY				selectUserList, selectUserListBySearch
+ * 									동적 쿼리로 수정.
+-->
+<mapper namespace="kr.letech.study.user.dao.UserDAO">
+
+<!-- ######################################################## -->
+<!-- ######################### CRUD ######################### -->
+	<select id="selectUserList" parameterType="kr.letech.study.cmmn.vo.SearchVO" resultType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.user.dao.UserDAO.selectUserList() - KCY */
+		
+		SELECT 
+			<include refid="userColumns" />
+		  FROM USER
+		 WHERE DEL_YN = 'N' 
+			<include refid="search" />
+	</select>
+	
+	<select id="selectUserDetail" parameterType="string" resultType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.user.dao.UserDAO.selectUserDetail() - KCY */
+	
+		SELECT
+			<include refid="userColumns" />
+		  FROM USER
+		 WHERE DEL_YN = 'N'
+		   AND USER_ID = #{userId}
+	</select>
+	
+	<insert id="insertUser" parameterType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.user.dao.UserDAO.insertUser() - KCY */
+	
+		INSERT INTO USER (
+			<include refid="userColumns" />
+		) VALUES (
+			<include refid="userInsert"  />
+		)
+	</insert>
+	
+	<update id="updateUser" parameterType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.user.dao.UserDAO.updateUser() - KCY */
+	
+		UPDATE USER
+		   SET USER_NM		= #{userNm}
+			 , REGNO1		= #{regno1}
+			 , REGNO2		= #{regno2}
+			 , RGST_ID		= #{rgstId}
+			 , RGST_DT		= #{rgstDt}
+			 , UPDT_ID		= #{updtId}
+			 , UPDT_DT		= #{updtDt}
+			 , PROFILE_GRP_ID = #{profileGrpId}
+		<if test="userPw neq ''">
+			 , USER_PW		= #{userPw}
+		</if>
+		 WHERE USER_ID = #{userId}
+	</update>
+	
+	<update id="deleteUser" parameterType="string">
+	/** kr.letech.study.user.dao.UserDAO.deleteUser() - KCY */
+	
+		UPDATE USER
+		   SET DEL_YN 		= 'Y' 
+		 WHERE USER_ID 		= #{userId}
+	</update>
+	
+	<select id="selectUserListBySearch" parameterType="string" resultType="kr.letech.study.user.vo.UserVO">
+	/** kr.letech.study.user.dao.UserDAO.selectUserListBySearch() - KCY */
+	
+		SELECT <include refid="userColumns" />
+		  FROM USER
+		 WHERE DEL_YN = 'N'
+		   AND (USER_ID LIKE CONCAT('%', #{search}, '%')
+		   		OR
+		   		USER_NM LIKE CONCAT('%', #{search}, '%'))
+	</select>
+	
+	<select id="selectUserRoles" parameterType="string" resultType="string">
+	/** kr.letech.study.user.dao.UserDAO.selectUserRole() - KCY */
+	
+		SELECT USER_ROLE
+		  FROM USER_ROLE
+		 WHERE DEL_YN 		= 'N'
+		   AND USER_ID 		= #{userId}
+	</select>
+	
+<!-- 	<insert id="mergeUserRole_OLD" parameterType="kr.letech.study.cmmn.vo.UserRoleVO">
+		/** kr.letech.study.user.dao.UserDAO.mergeUserRole_OLD() - KCY */
+		
+		INSERT INTO USER_ROLE (
+		    <include refid="userRoleColumns" />
+		) VALUES (
+		    <include refid="userRoleInsert"  />
+		)
+		ON DUPLICATE KEY UPDATE
+		    UPDT_ID 		= #{updtId},
+		    UPDT_DT 		= NOW(),
+		    DEL_YN 			= 'N'
+	</insert> -->
+	
+	<insert id="mergeUserRole" parameterType="Map">
+		/** kr.letech.study.user.dao.UserDAO.mergeUserRole() - KCY */
+		
+			INSERT INTO USER_ROLE (
+				<include refid="userRoleColumns" />
+			) VALUES 
+				<foreach collection="userRoles" item="userRole" separator=",">
+					(<include refid="userRoleInsert"  />)
+				</foreach>
+			
+			ON DUPLICATE KEY UPDATE
+				UPDT_ID 	= #{updtId}
+				, UPDT_DT 	= NOW()	
+				, DEL_YN 	= 'N'
+	</insert>
+	
+	<update id="deleteUserRole" parameterType="Map">
+	/** kr.letech.study.user.dao.UserDAO.deleteUserRole() - KCY */
+	
+		UPDATE USER_ROLE
+		   SET UPDT_ID = #{updtId}
+		     , UPDT_DT = NOW()
+		     , DEL_YN  = 'Y'
+		 WHERE USER_ID = #{userId}
+		<if test="userRoles neq null">
+		   AND USER_ROLE NOT IN
+			   <foreach collection="userRoles" item="userRole" open="(" separator="," close=")">
+			   	   #{userRole}
+			   </foreach>	
+		</if>
+	</update>
+
+	<update id="deleteProfileImg" parameterType="string">
+		/** kr.letech.study.user.dao.UserDAO.deleteProfileImg() - KCY */
+		
+			UPDATE USER
+			   SET PROFILE_GRP_ID = NULL
+			 WHERE USER_ID = #{userId}
+	
+	</update>
+
+<!-- ######################################################## -->
+<!-- ######################### /SQL ######################### -->
+	<sql id="userColumns">
+		USER_ID
+		 , USER_PW
+		 , USER_NM
+		 , REGNO1
+		 , REGNO2
+		 , RGST_ID
+		 , RGST_DT
+		 , UPDT_ID
+		 , UPDT_DT
+		 , DEL_YN
+		 , PROFILE_GRP_ID
+	</sql>
+	<sql id="userInsert">
+			#{userId}
+			, #{userPw}
+			, #{userNm}
+			, #{regno1}
+			, #{regno2}
+			, #{rgstId}
+			, NOW()
+			, #{updtId}
+			, NOW()
+			, 'N'
+			, #{profileGrpId}
+	</sql>
+	<sql id="userRoleColumns">
+	    USER_ROLE
+	    , USER_ID
+	    , RGST_ID
+	    , RGST_DT
+	    , UPDT_ID
+	    , UPDT_DT
+	    , DEL_YN
+	</sql>
+	<sql id="userRoleInsert">
+			#{userRole}
+		    , #{userId}
+		    , #{rgstId}
+		    , NOW()
+		    , #{updtId}
+		    , NOW()
+		    , 'N'
+	</sql>
+	<sql id="search">
+		<if test='term neq "default" and keyword eq 0'>
+			AND (USER_ID LIKE CONCAT('%', #{term}, '%')
+		   		OR
+		   		POST_TITLE LIKE CONCAT('%', #{term}, '%')	)
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 1'>
+	   		AND USER_ID LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 2'>
+	   		AND USER_NM LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	</sql>
+</mapper>

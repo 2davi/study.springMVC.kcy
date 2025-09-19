@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+ * 
+ * <pre>
+ * 
+ * </pre>
+ * 
+ * < 개정이력 >
+ * 
+ *  수정일			수정자			수정내용
+ *  ================================================
+ *  2025-09-19		KCY				최초 생성
+-->
+<mapper namespace="kr.letech.study.board.dao.BoardDAO">
+	<sql id="search">
+		<if test='term neq "default" and keyword eq 0'>
+			AND (USER_ID LIKE CONCAT('%', #{term}, '%')
+		   		OR
+		   		USER_NM LIKE CONCAT('%', #{term}, '%')
+		   		OR
+		   		POST_TITLE LIKE CONCAT('%', #{term}, '%')
+		   		OR
+		   		POST_CONTENT LIKE CONCAT('%', #{term}, '%')	)
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 1'>
+	   		AND USER_ID LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 2'>
+	   		AND USER_NM LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 3'>
+	   		AND (POST_TITLE LIKE CONCAT('%', #{term}, '%')
+	   			OR
+	   			POST_CONTENT LIKE CONCAT('%', #{term}, '%')	)
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 4'>
+	   		AND POST_TITLE LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	   	<if test='term neq "default" and keyword eq 5'>
+	   		AND POST_CONTENT LIKE CONCAT('%', #{term}, '%')
+	   	</if>
+	</sql>
+
+	<sql id="postsColumns">
+		POST_ID
+		, USER_ID
+		, BOARD_CD
+		, POST_TITLE
+		, POST_CONTENT
+		, POST_PARENT_ID
+		, HIDDEN_YN
+		, CMT_YN
+		, BANNED_YN
+		, ATTACH_GRP_ID
+		, RGST_ID
+		, RGST_DT
+		, UPDT_ID
+		, UPDT_DT
+		, DEL_YN
+	</sql>
+	<sql id="postsInsert">
+		#{postId}
+		, #{userId}
+		, #{boardCd}
+		, #{postTitle}
+		, #{postContent}
+		, #{postParentId}
+		, #{hiddenYn}
+		, #{cmtYn}
+		, #{bannedYn}
+		, #{attachGrpId}
+		, #{rgstId}
+		, NOW()
+		, #{updtId}
+		, NOW()
+		, 'N'
+	</sql>
+	<sql id="commentsColumns">
+		CMT_ID
+		, POST_ID
+		, USER_ID
+		, CMT_CONTENT
+		, CMT_PARENT_ID
+		, CMT_DEPTH
+		, CMT_ORDER
+		, HIDDEN_YN
+		, CMT_YN
+		, BANNED_YN
+		, RGST_ID
+		, RGST_DT
+		, UPDT_ID
+		, UPDT_DT
+		, DEL_YN
+	</sql>
+	<sql id="commentsInsert">
+		#{cmtId}
+		, #{postId}
+		, #{userId}
+		, #{cmtContent}
+		, #{cmtParentId}
+		, #{cmtDepth}
+		, #{cmtOrder}
+		, #{hiddenYn}
+		, #{cmtYn}
+		, #{bannedYn}
+		, #{rgstId}
+		, NOW()
+		, #{updtId}
+		, NOW()
+		, 'N'
+	</sql>
+
+	<select id="selectPostList" resultType="kr.letech.study.board.vo.PostsVO">
+	/** kr.letech.study.board.dao.BoardDAO .readPostList() - KCY */
+	
+		SELECT <include refid="postsColumns" />
+		  FROM POSTS
+		 WHERE DEL_YN = 'N'
+			<include refid="search" />
+			
+	</select>
+	
+	<select id="selectPostDetail" parameterType="string" resultType="kr.letech.study.board.vo.PostsVO">
+	/** kr.letech.study.board.dao.BoardDAO .readPostDetail() - KCY */
+	
+		SELECT <include refid="postsColumns" />
+		  FROM POSTS
+		 WHERE DEL_YN = 'N'
+		   AND POST_ID = #{postId}
+		   
+	</select>
+	
+	<insert id="insertPost" parameterType="kr.letech.study.board.vo.PostsVO">
+	/** kr.letech.study.board.dao.BoardDAO .insertPost() - KCY */
+	
+		<selectKey keyProperty="postId" resultType="string" order="BEFORE">
+			SELECT CONCAT(
+						'BD'
+					<if test="boardCd eq 'AB010'">
+						, 'F'
+					</if>
+						, DATE_FORMAT(NOW(), '%y%m%d')
+						, LPAD(NEXT VALUE FOR POST_SEQ, 5, '0')
+				   )
+		</selectKey>
+		INSERT INTO POSTS (
+			<include refid="postsColumns" />
+		) VALUES (
+			<include refid="postsInsert" />
+		)
+		
+	</insert>
+	
+</mapper>

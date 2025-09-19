@@ -1,0 +1,39 @@
+@charset "UTF-8";
+
+.form-attr {
+	display: flex;
+	flex-direction: row;
+	margin: 10px 20px;
+}
+.form-label {
+	width: 120px;
+}
+.form-element-radio {
+	margin: 0px 20px 0px 0px;
+}
+.searchBox {
+	display: flex;
+	flex-direction: row;
+	gap: 5px;
+}
+
+
+/* 필수: 뷰포트 기준 레이아웃 뼈대 */
+html, body { height: 100%; }
+.kcy_wrap { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* 헤더/푸터 제외 나머지 공간 */
+.kcy_content { flex: 1 1 auto; display: flex; min-height: 0; }
+
+/* 왼쪽 사이드바는 너가 쓰던 대로... */
+.kcy_left-sidebar { width: 260px; flex: 0 0 260px; }
+
+/* 본문 영역 */
+.kcy_page_content { flex: 1 1 auto; min-height: 0; display: flex; }
+
+/* 실제 스크롤이 생길 컨테이너 */
+.kcy_page_scroll {
+  flex: 1 1 auto;       /* 남은 공간을 차지 */
+  min-height: 0;        /* Flex 최소크기 제약 해제 */
+  overflow-y: auto;     /* 필요할 때만 세로 스크롤 */
+}

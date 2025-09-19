@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+ * 
+ * <pre>
+ * 
+ * </pre>
+ * 
+ * < 개정이력 >
+ * 
+ *  수정일			수정자			수정내용
+ *  ==================================================
+ *  2025-09-17		KCY				최초 생성
+-->
+<mapper namespace="kr.letech.study.cmmn.file.dao.FilesDAO">
+<resultMap id="FileCountMap" type="map">
+    <result column="attachGrpId" property="attachGrpId"/>
+    <result column="fileCount" property="fileCount"/>
+</resultMap>
+	<sql id="filesColumns">
+		FILE_GRP_ID
+		, FILE_SEQ
+		, FILE_ORG_NM
+		, FILE_REF_NM
+		, FILE_SIZE
+		, FILE_DIR
+		, MIME_TYPE
+		, ATTACH_TYPE
+		, RGST_ID
+		, RGST_DT
+		, UPDT_ID
+		, UPDT_DT
+		, DEL_YN
+	</sql>
+	<sql id="filesInsert">
+		#{fileGrpId}
+		, #{fileSeq}
+		, #{fileOrgNm}
+		, #{fileRefNm}
+		, #{fileSize}
+		, #{fileDir}
+		, #{mimeType}
+		, #{attachType}
+		, #{rgstId}
+		, NOW()
+		, #{updtId}
+		, NOW()
+		, #{delYn}
+	</sql>
+	
+	<select id="selectFileList" parameterType="string" resultType="kr.letech.study.cmmn.file.vo.FilesVO">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectFileList() - KCY */
+		
+		SELECT <include refid="filesColumns" />
+		  FROM FILES
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND DEL_YN = 'N'
+		   
+	</select>
+	
+	
+	<insert id="insertFile" parameterType="kr.letech.study.cmmn.file.vo.FilesVO">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .insertFile() - KCY */
+	
+		INSERT INTO FILES(
+			<include refid="filesColumns" />
+		) VALUES (
+			<include refid="filesInsert" />
+		)
+	</insert>
+	<insert id="insertFileList" parameterType="List">
+		/** kr.letech.study.cmmn.file.dao.FilesDAO .insertFileList() - KCY */
+	
+		INSERT INTO FILES (
+			<include refid="filesColumns" />
+		)
+		VALUES
+			<foreach collection="list" item="file" separator=",">
+				(
+				#{file.fileGrpId}
+				, #{file.fileSeq}
+				, #{file.fileOrgNm}
+				, #{file.fileRefNm}
+				, #{file.fileSize}
+				, #{file.fileDir}
+				, #{file.mimeType}
+				, #{file.attachType}
+				, #{file.rgstId}
+				, NOW()
+				, #{file.updtId}
+				, NOW()
+				, #{file.delYn}
+				)
+			</foreach>
+	</insert>
+	
+	<update id="deleteFile" parameterType="Map">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .deleteFile() - KCY */
+	
+		UPDATE FILES
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{userId}
+		     , UPDT_DT = NOW()
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		
+	</update>
+
+	<select id="selectFileRefNm" parameterType="string" resultType="string">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectFileRefNm() - KCY */
+	
+		SELECT FILE_REF_NM
+		  FROM FILES
+		 WHERE FILE_GRP_ID = #{profileGrpId}
+	</select>
+	
+	<select id="selectAttachFileCount" parameterType="list" resultMap="FileCountMap">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectAttachFileCount() - KCY */
+	
+		SELECT FILE_GRP_ID
+			 , COUNT(*)
+		  FROM FILES
+		 WHERE DEL_YN = 'N'
+		   AND FILE_GRP_ID IN
+		   <foreach collection="list" item="attachGrpId" open="(" separator="," close=")">
+		   	#{attachGrpId}
+		   </foreach>
+		  GROUP BY FILE_GRP_ID
+		   
+	</select>
+</mapper>

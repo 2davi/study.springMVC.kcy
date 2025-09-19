@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- beans 태그 디폴트,
+	 XMLSchema-instance 태그 xsi alias 사용,
+	 security 태그 s alias 사용 -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:s="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<s:http auto-config="true" use-expressions="true">
+
+		<!-- 정적 리소스는 모두 접근 허용 -->
+		<s:intercept-url pattern="/resources/**" access="permitAll" />
+
+		<!-- 로그인된 상태에서는 로그인이나 회원가입 화면에 접근 못하도록 함 -->
+		<s:intercept-url pattern="/cmmn/sec/loginForm" access="isAnonymous()" />
+		<s:intercept-url pattern="/cmmn/user/insert" access="isAnonymous()" />
+
+		<!-- 관리자페이지는 관리자만 접근 허용 -->
+		<s:intercept-url pattern="/admin/**" access="hasRole('admin')" />
+		
+		<!-- 0917_KCY 기본 서비스는 로그인된 사용자만 접근하도록 함 -->
+		<!-- 매핑 핸들러의 흐름
+			1. /cmmn/user/insertUserForm 요청이 들어왔다
+			2. intercept-url의 순서대로 따라 내려가면서 대조한다.
+			3. inAnonymous()래. OUT.
+			
+			1. 나머지 /cmmn/user/** 요청이 들어왔다.
+			2. 아래에 위치한 intercept-url을 탄다.
+			
+			만약 전체 설정`/**`이 `/insertUserForm` 보다 상위에 있으면
+			그냥 모든 /cmmn/user 요청은 isAuthenticated()를 탄다.
+		 -->
+		<s:intercept-url pattern="/cmmn/user/**" access="isAuthenticated()" />
+		<s:intercept-url pattern="/board/**" access="isAuthenticated()" />
+				
+
+		<!-- 로그인 설정 -->
+		<s:form-login
+			username-parameter="userId"
+			password-parameter="userPw"
+			login-processing-url="/cmmn/sec/loginProc"
+			login-page="/cmmn/sec/loginForm"
+			authentication-failure-handler-ref="userLoginFailHandler"
+			authentication-success-handler-ref="userLoginSuccessHandler" />
+
+		<!-- 로그아웃 설정 -->
+		<s:logout
+			logout-url="/cmmn/sec/logout"
+			logout-success-url="/"
+			invalidate-session="true"
+			delete-cookies="true" />
+
+		<!-- AccessDeniedHandler: 권한이 없어서 금지된 URI 접속할 때 보여줄 페이지(403 에러 페이지 대체) -->
+		<s:access-denied-handler error-page="/" />
+
+		<!-- CSRF 끄기 -->
+		<s:csrf disabled="true"/>
+	</s:http>
+
+	<!-- DB 연동 설정 -->
+	<!-- Security의 AuthenticationProvider 인터페이스를 직접 구현하여
+		 Persistence Layer 접근을 유연하게 처리함. -->
+	<s:authentication-manager>
+		<s:authentication-provider ref="userLoginAuthenticationProvider"/>
+	</s:authentication-manager>
+
+	<!-- 패스워드 단방향 암호화 -->
+	<bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+</beans>
