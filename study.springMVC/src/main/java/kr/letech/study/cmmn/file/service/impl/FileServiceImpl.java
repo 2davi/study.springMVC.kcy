@@ -3,10 +3,13 @@
  */
 package kr.letech.study.cmmn.file.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,13 +68,32 @@ public class FileServiceImpl implements FileService {
 	}
 	
 	@Override @SuppressWarnings("finally")
-	public List<FilesVO> createFile(MultipartFile[] multiparts, String attacyType, String userId){
+	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId){
 		log.debug("▩▩▩ FileService .createFile() 호출.");
 		
 		List<FilesVO> fileVOList = new ArrayList<>();
 		
 		try {
-			fileVOList = FileStorageUtils.upload(multiparts, attacyType, userId);
+			fileVOList = FileStorageUtils.upload(multiparts, attachType, userId);
+			
+			log.debug("▩ ----- fileVOList: {}", fileVOList.size());
+			fileDAO.insertFileList(fileVOList);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fileVOList = null;
+		} finally {
+			return fileVOList;			
+		}
+	}
+	
+	@Override @SuppressWarnings("finally")
+	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId, String attachGrpId) {
+		log.debug("▩▩▩ FileService .createFile() 호출.");
+		
+		List<FilesVO> fileVOList = new ArrayList<>();
+
+		try {
+			fileVOList = FileStorageUtils.upload(multiparts, attachType, userId, attachGrpId);
 			
 			log.debug("▩ ----- fileVOList: {}", fileVOList.size());
 			fileDAO.insertFileList(fileVOList);
@@ -112,6 +134,38 @@ public class FileServiceImpl implements FileService {
 				"fileGrpId", fileGrpId
 				);
 		fileDAO.deleteFile(param);
+	}
+	
+	@Override
+	public void removeFiles(String userId, String fileGrpId, List<String> deleteFileSeqList) {
+		log.debug("▩▩▩ FileService .removeFiles() 호출.");
+		
+		fileDAO.deleteFiles(fileGrpId, userId, deleteFileSeqList);
+	}
+	
+	@Override
+	public void downloadFile(String fileGrpId, String fileSeq, HttpServletResponse response) {
+		log.debug("▩▩▩ FileService .downloadFile() 호출.");
+		
+	    /*
+	     * 1. 등록된 첨부파일 정보 조회
+	     * 2. 다운로드 가능 여부 검증
+	     * 3. 다운로드 실행
+	     */
+		log.debug("▩ ----- 파라미터 체크: {}, {}", fileGrpId, fileSeq);
+	    FilesVO fileVO = fileDAO.selectFile(Map.of("fileGrpId", fileGrpId, "fileSeq", fileSeq));
+
+	    if (fileVO == null) {
+	        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+	        return;
+	    }
+
+	    // 파일유틸 내에서 제공하는 기능으로 만들어보자.
+	    String filePath = FileStorageUtils.REPO_DIR
+	            + File.separatorChar + fileVO.getFileDir()
+	            + File.separatorChar + fileVO.getFileRefNm();
+
+	    FileStorageUtils.download(fileVO.getFileOrgNm(), filePath, response);
 	}
 	
 	@Override

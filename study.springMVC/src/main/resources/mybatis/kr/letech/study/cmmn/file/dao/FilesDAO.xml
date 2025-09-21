@@ -49,6 +49,17 @@
 		, #{delYn}
 	</sql>
 	
+	<select id="selectFile" parameterType="map" resultType="kr.letech.study.cmmn.file.vo.FilesVO">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectFileList() - KCY */
+	
+		SELECT <include refid="filesColumns" />
+		  FROM FILES
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND FILE_SEQ = #{fileSeq}
+		   AND DEL_YN = 'N'
+		   
+	</select>
+	
 	<select id="selectFileList" parameterType="string" resultType="kr.letech.study.cmmn.file.vo.FilesVO">
 	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectFileList() - KCY */
 		
@@ -104,6 +115,21 @@
 		     , UPDT_DT = NOW()
 		 WHERE FILE_GRP_ID = #{fileGrpId}
 		
+	</update>
+	
+	<update id="deleteFiles" parameterType="map">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .deleteFiles() - KCY */
+	
+		UPDATE FILES
+		   SET DEL_YN = 'Y'
+		     , UPDT_ID = #{userId}
+		     , UPDT_DT = NOW()
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND FILE_SEQ IN
+			 <foreach collection="deleteFileSeqList" item="seq" open="(" separator="," close=")">
+			#{seq}
+			</foreach>
+	
 	</update>
 
 	<select id="selectFileRefNm" parameterType="string" resultType="string">

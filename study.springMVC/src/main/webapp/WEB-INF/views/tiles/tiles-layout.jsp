@@ -4,6 +4,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <!-- Tiles 설정 0202 start -->
 <!-- 공통변수 처리 -->
@@ -18,6 +19,7 @@
 <meta name="description" content="">
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1">
+<sec:csrfMetaTags/>
 <script type="text/javascript">
 	var CONTEXT_PATH = "${CONTEXT_PATH}";
 	var RESOURCES_PATH = "${RESOURCES_PATH}";

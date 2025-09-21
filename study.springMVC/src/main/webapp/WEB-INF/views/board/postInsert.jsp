@@ -53,9 +53,11 @@
 						<label for="attachFiles">첨부파일: </label>
 					</div>
 					<div>
-						<input type="file" id="attachFiles" name="attachFiles" multiple />
-						<div id="divAttachFilesList">
-							<ul id="ulAttachFilesList">
+						<input type="button" id="fakeAttachFiles" value="파일추가_" onclick="fn_activateAttachFiles()" />
+						<input type="file" id="tempAttachFiles" onchange="fn_addAttachFiles(this)" multiple hidden /> 
+						<!-- <input type="file" id="attachFiles" name="attachFiles" multiple /> -->
+						<div class="div-attach-file-list" id="divAttachFilesList">
+							<ul class="ul-attach-file-list" id="ulAttachFilesList">
 							</ul>
 						</div>
 					</div>
@@ -63,7 +65,7 @@
 			
 		</div>
 		<div><!-- 글 등록버튼 -->
-			<input type="submit" value="등록" />
+			<input type="button" value="등록" onclick="fn_submitPost()" />
 			<input type="reset" value="초기화" />
 		</div>
 			</form>
@@ -71,86 +73,117 @@
 	</div>
 </div>
 
-<script>
-  const form = document.getElementById('postForm');
-  const attachInput = document.getElementById('attachFiles');
-  const listEl = document.getElementById('ulAttachFilesList');
+<script defer >
+const postForm = document.getElementById('postForm');
+const boardCd = document.getElementById('boardCd');
+const postTitle = document.getElementById('postTitle');
+const postContent = document.getElementById('postContent');
+//const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+//const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+	
+const attachInput = document.getElementById('attachFiles');
+const tempAttachInput = document.getElementById('tempAttachFiles');
+	
+const attachList = document.getElementById('ulAttachFilesList');
+let attachFiles = [];
+	
+/** 커스텀 함수 */
+//-- dudupe(arr[]) : 동일 파일의 중복 첨부를 제거.
+function dedupe(arr) {
+	console.debug("dedupe() 실행. 전달된 개수:", arr.length);
+	const m = new Map();
+	arr.forEach(file => {
+		  console.log("file:", file);
+		  console.log("name:", file.name, "size:", file.size, "lastModified:", file.lastModified);
+		const key = `\${file.name}_\${file.size}_\${file.lastModified}`;
+		console.debug("처리 중:", key);
+		m.set(key, file);
+	});
+	console.debug("중복 제거 후 개수:", m.size);
+	return Array.from(m.values());
+};
+	
+//-- renderList() : 전역변수를 참조해서 첨부파일의 리스트를 새로 렌더링
+function renderList() {
+	console.debug("attachFiles:: ", attachFiles);
+	attachList.innerHTML = ''; //초기화.
+	if(attachFiles.length === 0) {
+		attachList.innerHTML = "<li>선택된 파일이 없습니다.</li>";
+		return;
+	}
+	attachFiles.forEach((f, idx) => {
+		const li = document.createElement('li');
+		const delBtn = document.createElement('input');
+		li.textContent = f.name + ' ';
+		delBtn.type = "button";
+		delBtn.value= "삭제";
+		delBtn.onclick = () => {
+			attachFiles.splice(idx, 1);
+			renderList();
+		};
+		
+		li.appendChild(delBtn);
+		attachList.appendChild(li);
+	});
+}
 
+//-- fn_activateAttachFiles() : 가짜 버튼 사용
+function fn_activateAttachFiles() {
+	tempAttachInput.click();
+};
+	
+//-- fn_addAttachFiles(<input type='file'>) : 첨부파일 추가(누적)
+function fn_addAttachFiles(input) {
+	console.debug("fn_addAttachFiles() 실행.");
+	//const selected = Array.from(e.target.files);
+	const selected = Array.from(input.files);
+	console.debug("selected:: ", selected);
+	attachFiles = dedupe([...attachFiles, ...selected]);
+	console.debug("dedupe한 뒤의 attachFiles:: ", attachFiles);
+	renderList(); //파일이 업로드될 때마다 목록 갱신
+	tempAttachInput.value = ''; 
+}
 
-  let files = [];
+//-- fn_submitPost() : 폼 submit 이벤트를 대신 호출 
+async function fn_submitPost() {
+	console.debug("fn_submitPost() 실행.");
+	const formData = new FormData();
+	formData.append('boardCd', boardCd.value);
+	formData.append('postTitle', postTitle.value);
+	formData.append('postContent', postContent.value);
+	attachFiles.forEach(f => formData.append('attachFiles', f));
+	
+	try {
+		const resp = await fetch(postForm.action, {
+			method: "POST"
+			, body: formData
+			/* , headers: {
+				"Accept": "application/json"
+			} */
+		});
+		console.debug("서버 응답 상태: ", resp.status);
+		
+		if(resp.ok) {
+			console.debug("resp OK인가?");
+			const data = await resp.json();
+			console.debug("Response 객체 DATA:: ", data);
+			
+			let boardCate = data.boardCate;
+			let postId = data.postId;
+			location.href = `/board/\${boardCate}/post?postId=\${postId}`;
+			console.debug("최종 주소:: ",`/board/\${boardCate}/post?postId=\${postId}` );
+		}
+	} catch (error) {
+		console.error('업로드 실패:', error);
+	}
+}
+	
+	
+//브라우저 로딩 후 최초 렌더링
+renderList();
 
-  // 파일 추가
-  attachInput.addEventListener('change', (e) => {
-    const selected = Array.from(e.target.files);
-    files = dedupe([...files, ...selected]);  // 누적 + 중복 제거
-    renderList();
-    // 같은 파일을 또 선택해도 change가 다시 뜨도록 값 초기화
-    attachInput.value = '';
-  });
-
-  // 목록 렌더링
-  function renderList() {
-    listEl.innerHTML = '';
-    if (files.length === 0) {
-      const li = document.createElement('li');
-      li.textContent = '선택된 파일이 없습니다.';
-      listEl.appendChild(li);
-      return;
-    }
-    files.forEach((file, idx) => {
-      const li = document.createElement('li');
-      li.textContent = file.name + ' ';
-
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.textContent = '삭제';
-      delBtn.addEventListener('click', () => {
-        files.splice(idx, 1);
-        renderList();
-      });
-
-      li.appendChild(delBtn);
-      listEl.appendChild(li);
-    });
-  }
-/* 
-  // 파일 중복 제거: 이름+사이즈+수정시각 조합으로 Key 생성
-  function dedupe(arr) {
-    const m = new Map();
-    arr.forEach(f => m.set(`${f.name}_${f.size}_${f.lastModified}`, f));
-    return Array.from(m.values());
-  }
-
-  // 폼 submit 가로채서 FormData로 우리가 보관한 files만 전송
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const fd = new FormData();
-    fd.append('postTitle', document.getElementById('postTitle').value);
-    fd.append('postContent', document.getElementById('postContent').value);
-    files.forEach(f => fd.append('attachFiles[]', f)); // 같은 이름으로 여러 파일 전송 가능
-
-    const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
-    const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
-    
-    const res = await fetch(form.action, {
-    	method: 'POST'
-    	, body: fd 
-    	, headers: { [header]: token } 
-    });
-    // 필요하면 여기서 location.href = '/board/post/list' 같은 후처리
-    console.log('서버 응답 상태:', res.status);
-  });
-
-  // reset 누르면 내부 상태도 초기화
-  form.addEventListener('reset', () => {
-    files = [];
-    renderList();
-    attachInput.value = '';
-  }); */
-
-  // 초기 렌더
-  renderList();
+	// 초기 렌더
+renderList();
 </script>
 
 </body>

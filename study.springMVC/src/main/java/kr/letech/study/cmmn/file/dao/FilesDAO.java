@@ -25,7 +25,7 @@ import kr.letech.study.cmmn.file.vo.FilesVO;
 @Mapper
 public interface FilesDAO {
 
-	public FilesVO selectFile(String fileGrpId, String fileSeq);
+	public FilesVO selectFile(Map<String, String> params);
 	public List<FilesVO> selectFileList(String fileGrpId);
 	public Integer insertFile(FilesVO file);
 	public Integer insertFileList(List<FilesVO> file);
@@ -38,6 +38,7 @@ public interface FilesDAO {
 	 * @return
 	 */
 	public Integer deleteFile(Map<String, String> param);
+	public Integer deleteFiles(String fileGrpId, String userId, List<String> deleteFileSeqList);
 	
 	
 	public String selectFileRefNm(String profileGrpId);

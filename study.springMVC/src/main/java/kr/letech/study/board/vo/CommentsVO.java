@@ -32,8 +32,9 @@ public class CommentsVO extends BaseVO implements Serializable {
 	private Integer cmtDepth;
 	private Integer cmtOrder;
 	private String hiddenYn;
-	private String cmtYn;
 	private String bannedYn;
+	
+	private String cmtPath;
 	
 	
 	/** Constructors
@@ -46,7 +47,6 @@ public class CommentsVO extends BaseVO implements Serializable {
 	 * @param cmtDepth
 	 * @param cmtOrder
 	 * @param hiddenYn
-	 * @param cmtYn
 	 * @param bannedYn
 	 */
 	public CommentsVO() {}
@@ -61,7 +61,7 @@ public class CommentsVO extends BaseVO implements Serializable {
 		this.cmtOrder = cmtOrder;
 	}
 	public CommentsVO(String cmtId, String postId, String userId, String cmtContent, String cmtParentId,
-			Integer cmtDepth, Integer cmtOrder, String hiddenYn, String cmtYn, String bannedYn) {
+			Integer cmtDepth, Integer cmtOrder, String hiddenYn, String bannedYn) {
 		super();
 		this.cmtId = cmtId;
 		this.postId = postId;
@@ -71,7 +71,6 @@ public class CommentsVO extends BaseVO implements Serializable {
 		this.cmtDepth = cmtDepth;
 		this.cmtOrder = cmtOrder;
 		this.hiddenYn = hiddenYn;
-		this.cmtYn = cmtYn;
 		this.bannedYn = bannedYn;
 	}
 	
@@ -104,11 +103,11 @@ public class CommentsVO extends BaseVO implements Serializable {
 	public String getHiddenYn() {
 		return hiddenYn;
 	}
-	public String getCmtYn() {
-		return cmtYn;
-	}
 	public String getBannedYn() {
 		return bannedYn;
+	}
+	public String getCmtPath() {
+		return cmtPath;
 	}
 	public void setCmtId(String cmtId) {
 		this.cmtId = cmtId;
@@ -134,11 +133,11 @@ public class CommentsVO extends BaseVO implements Serializable {
 	public void setHiddenYn(String hiddenYn) {
 		this.hiddenYn = hiddenYn;
 	}
-	public void setCmtYn(String cmtYn) {
-		this.cmtYn = cmtYn;
-	}
 	public void setBannedYn(String bannedYn) {
 		this.bannedYn = bannedYn;
+	}
+	public void setCmtPath(String cmtPath) {
+		this.cmtPath = cmtPath;
 	}
 	
 	
@@ -181,7 +180,7 @@ public class CommentsVO extends BaseVO implements Serializable {
 	@Override
 	public String toString() {
 		return "CommentsVO [cmtId=" + cmtId + ", postId=" + postId + ", userId=" + userId + ", cmtParentId="
-				+ cmtParentId + ", cmtDepth=" + cmtDepth + ", cmtOrder=" + cmtOrder
-				+ ", hiddenYn=" + hiddenYn + ", cmtYn=" + cmtYn + ", bannedYn=" + bannedYn + "]";
+				+ cmtParentId + ", cmtDepth=" + cmtDepth + ", cmtOrder=" + cmtOrder + ", cmtPath=" + cmtPath
+				+ ", hiddenYn=" + hiddenYn + ", bannedYn=" + bannedYn + "]";
 	}
 }

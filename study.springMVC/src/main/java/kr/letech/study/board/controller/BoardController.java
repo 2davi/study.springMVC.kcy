@@ -3,21 +3,31 @@
  */
 package kr.letech.study.board.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.MessageSource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.letech.study.board.service.BoardService;
+import kr.letech.study.board.vo.CommentsVO;
 import kr.letech.study.board.vo.PostsVO;
+import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.sec.annotation.CurrentUser;
 import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
 import kr.letech.study.cmmn.vo.SearchVO;
@@ -45,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardController {
 	
 	private final BoardService boardService;
+	private final FileService fileService;
 	private final MessageSource messageSource;
 	private final String BOARD_CATE = "forum";
 	
@@ -78,12 +89,14 @@ public class BoardController {
 	@GetMapping("/{boardCate}/post")
 	public String postDetail(Model model
 			, @PathVariable("boardCate") String boardCd
-			, @RequestParam(name="postId") String postId) {
+			, @RequestParam(name="postId") String postId
+			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post (BoardController) 연결.");
 		
 		PostsVO post = boardService.readPostDetail(model, postId);
 		
-		
+		model.addAttribute("username", user.getUsername());
+		log.debug("▩ ----- 로그인한 회원: {}, 게시글 작성자: {}", user.getUsername(), post.getUserId());
 		return "board/postDetail.tiles";
 	}
 	
@@ -100,17 +113,20 @@ public class BoardController {
 //	- (수정) : GET	/board/post/update?boardId=...
 	@GetMapping("/{boardCate}/post/update")
 	public String postUpdate(Model model
+			, @RequestParam("postId") String postId
 			) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post/update (BoardController) 연결.");
 		
+		boardService.readPostDetail(model, postId);
 		
 		return "board/postUpdate.tiles";
 	}
-	
-	
+
+
 //	- (등록) : POST	/board/post/insert
-	@PostMapping("/post/insert")
-	public String postInsert(Model model
+	@PostMapping(value="/post/insert", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> postInsert(Model model
 			, @ModelAttribute PostsVO post
 			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
 			, @CurrentUser UserDetailsVO user
@@ -119,77 +135,126 @@ public class BoardController {
 	    log.debug("첨부파일 개수: {}", attachFiles != null ? attachFiles.length : 0);
 		
 		String userId = user.getUsername();
-//		log.debug("▩▩▩ LOG-IN 사용자: {}, - {}", userId, user.getUserVO().getUserNm());
 		
-		String boardCate = BOARD_CATE;
-		
-		String logicalViewName = boardService.createPost(model, post, attachFiles, userId);
-		
-		String postId = post.getPostId();
-		return logicalViewName;
+		Map<String, Object> body = new HashMap<>();
+		boardService.createPost(body, post, attachFiles, userId);
+
+		return ResponseEntity.ok(body);
 	}
 	
 	
 //	- (수정) : POST	/board/post/update
-	@PostMapping("/post/update")
-	public String postUpdate(
-			@RequestParam("postId") String postId
-			) {
+	@PostMapping(value="/post/update", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> postUpdate(
+			@ModelAttribute PostsVO post
+			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
+			, @RequestParam(name="deleteFileSeq", required=false) List<String> deleteFileSeqList
+			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/post/update (BoardController) 연결.");
 		
 		String boardCate = BOARD_CATE;
+		String userId = user.getUsername();
 		
-		
+		Map<String, Object> body = new HashMap<>();
+		boardService.modifyPost(body, post, attachFiles, deleteFileSeqList, userId);
 
-		return "redirect:/board/"+boardCate+"/post/"+postId;
+		return ResponseEntity.ok(body);
 	}
 	
 	
 //	- (삭제) : POST	/board/post/delete
-	@PostMapping("/post/delete")
-	public String postDelete() {
+	@GetMapping("/post/delete")
+	public String postDelete(
+			@RequestParam("postId") String postId
+			, @CurrentUser UserDetailsVO user
+			) {
 		log.debug("▩▩▩ URL: POST/board/post/delete (BoardController) 연결.");
 		
+		boardService.removePost(user.getUsername(), postId);
 		
 		String boardCate = BOARD_CATE;
 		return "redirect:/board/"+boardCate+"/list";
 	}
 
+
+//	- (파일다운) : /board/attach/select
+	@GetMapping("/attach/select")
+	public void attachFileDownload(HttpServletResponse response
+			, @RequestParam("fileGrpId") String fileGrpId
+			, @RequestParam("fileSeq") String fileSeq
+			) {
+		log.debug("▩▩▩ URL: GET/board/attach/select (BoardController) 연결.");
+		
+		fileService.downloadFile(fileGrpId, fileSeq, response);
+	}
+	
+	
 //	- (덧글조회) : POST /board/comment/select
-	@PostMapping("/comment/select")
-	public /*ResponseEntity<?>*/void commentSelect() {
-		log.debug("▩▩▩ URL: POST/board/comment/select (BoardController) 연결.");
+	@GetMapping(value="/comment/select", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> commentSelect(
+			@RequestParam("postId") String postId
+			, @CurrentUser UserDetailsVO user
+			) {
+		log.debug("▩▩▩ URL: GET/board/comment/select (BoardController) 연결.");
+		log.debug("▩ ----- 파라미터 검증 : POST_ID : {}", postId);
 		
+		String username = user.getUsername();
+		Map<String, Object> body = new HashMap<>();
+		boardService.readComments(body, postId);
 		
+		body.put("username", username);
+		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글등록) : POST /board/comment/insert
-	@PostMapping("/comment/insert")
-	public void commentInsert() {
+	@PostMapping(value="/comment/insert", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> commentInsert(
+			@RequestBody CommentsVO comment
+			, @CurrentUser UserDetailsVO user
+			) {
 		log.debug("▩▩▩ URL: POST/board/comment/insert (BoardController) 연결.");
+
+		String username = user.getUsername();
+		Map<String, Object> body = new HashMap<>();
+		boardService.createComment(body, comment, comment.getPostId(), username);
 		
+		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글수정) : POST /board/comment/update
-	@PostMapping("/comment/update")
-	public void commentUpdate() {
+	@PostMapping(value="/comment/update", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> commentUpdate(
+			@RequestBody CommentsVO comment
+			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/comment/update (BoardController) 연결.");
+
+		String username = user.getUsername();
+		Map<String, Object> body = new HashMap<>();
+		boardService.modifyComment(body, comment, username);
 		
+		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글삭제) : POST /board/comment/delete
-	@PostMapping("/comment/delete")
-	public void commentDelete() {
+	@PostMapping(value="/comment/delete", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> commentDelete(
+			@RequestBody Map<String, String> payload
+			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/comment/delete (BoardController) 연결.");
 		
+		String cmtId = payload.get("cmtId");
+		log.debug("▩ ----- 파라미터 검증 : CMT_ID : {}", cmtId);
 		
+		String username = user.getUsername();
+		Map<String, Object> body = new HashMap<>();
+		boardService.removeComment(body, cmtId, username);
+		
+		return ResponseEntity.ok(body);
 	}
 	
-//	- (파일다운) : /board/attach/select
-	public void attachFileDownload(
-			@RequestParam("fileGrpId") String fileGrpId,
-			@RequestParam("fileSeq") Integer fileSeq
-			) {
-		
-	}
 }

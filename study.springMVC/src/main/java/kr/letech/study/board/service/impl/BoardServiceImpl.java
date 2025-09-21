@@ -4,6 +4,7 @@
 package kr.letech.study.board.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import kr.letech.study.board.dao.BoardDAO;
 import kr.letech.study.board.service.BoardService;
+import kr.letech.study.board.vo.CommentsVO;
 import kr.letech.study.board.vo.PostsVO;
 import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.file.vo.FilesVO;
@@ -50,13 +52,16 @@ public class BoardServiceImpl implements BoardService {
 	@Override @Transactional
 	public PostsVO readPostDetail(Model model, String postId) {
 		log.debug("▩▩▩ BoardService .readPostDetail() 호출.");
+
 		PostsVO post = null;
-		
 		post = boardDAO.selectPostDetail(postId);
-		List<FilesVO> attachFileList = fileService.readAttachFileList(post.getAttachGrpId());
-		
 		model.addAttribute("post", post);
-		model.addAttribute("attachFileList", attachFileList);
+		
+		if(post.getAttachGrpId() != null) {
+			List<FilesVO> attachFileList = fileService.readAttachFileList(post.getAttachGrpId());
+			model.addAttribute("attachFileList", attachFileList);
+		}
+		
 		model.addAttribute("isOk", "이게 되나??");//된다
 		return post;
 	}
@@ -81,15 +86,47 @@ public class BoardServiceImpl implements BoardService {
 		boardDAO.insertPost(post);
 	}
 	
+//	@Override @Transactional
+//	public String createPost(Model model
+//			, PostsVO post
+//			, MultipartFile[] attachFiles
+//			, String userId) {
+//		log.debug("▩▩▩ BoardService .createPost() 호출.");
+//
+//		List<FilesVO> fileVOList = null;
+//		
+//		//파일이 존재하는지 체크 후 첨부파일 처리
+//		if(attachFiles != null && attachFiles.length > 0) {
+//			log.debug("▩ ----- 첨부파일 존재함.");
+//			fileVOList = fileService.createFile(attachFiles, CMMN_CD_BOARD, post.getUserId());
+//			
+//			String attachGrpId = fileVOList.get(0).getFileGrpId();
+//			
+//			if(attachFiles.length != fileVOList.size() || attachGrpId == null) {
+//				model.addAttribute("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
+//				model.addAttribute("post", post);
+//				return "redirect:/board/"+BOARD_CATE+"/post/insert";
+//			}
+//			post.setAttachGrpId(attachGrpId);
+//		
+//		} else {
+//			log.debug("▩ ----- 첨부파일 없음.");
+//		}
+//		
+//		createPost(post, userId);
+//		return "redirect:/board/"+BOARD_CATE+"/post?postId=" + post.getPostId();
+//	}
+	
+	
 	@Override @Transactional
-	public String createPost(Model model
+	public String createPost(Map<String, Object> body
 			, PostsVO post
 			, MultipartFile[] attachFiles
 			, String userId) {
 		log.debug("▩▩▩ BoardService .createPost() 호출.");
 
 		List<FilesVO> fileVOList = null;
-		
+//		log.debug("▩ ----- attachFiles : {}", attachFiles.toString());
 		//파일이 존재하는지 체크 후 첨부파일 처리
 		if(attachFiles != null && attachFiles.length > 0) {
 			log.debug("▩ ----- 첨부파일 존재함.");
@@ -97,18 +134,131 @@ public class BoardServiceImpl implements BoardService {
 			
 			String attachGrpId = fileVOList.get(0).getFileGrpId();
 			
+			/**/
 			if(attachFiles.length != fileVOList.size() || attachGrpId == null) {
-				model.addAttribute("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
-				model.addAttribute("post", post);
+				body.put("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
+				body.put("post", post);
 				return "redirect:/board/"+BOARD_CATE+"/post/insert";
 			}
 			post.setAttachGrpId(attachGrpId);
 		
+			for(FilesVO fileVO: fileVOList) {
+				log.debug("▩ ------------- ▩");
+				log.debug("▩ ----- fileVO :: {}", fileVO.toString());
+				
+				
+			}
 		} else {
 			log.debug("▩ ----- 첨부파일 없음.");
 		}
 		
+		
 		createPost(post, userId);
+		body.put("boardCate", BOARD_CATE);
+		body.put("postId", post.getPostId());
 		return "redirect:/board/"+BOARD_CATE+"/post?postId=" + post.getPostId();
+	}
+	
+	@Override @Transactional
+	public String modifyPost(Map<String, Object> body
+			, PostsVO post
+			, MultipartFile[] attachFiles
+			, List<String> deleteFileSeqList
+			, String userId) {
+		log.debug("▩▩▩ BoardService .modifyPost() 호출.");
+		
+		
+		if(deleteFileSeqList != null && !deleteFileSeqList.isEmpty()) {
+	        log.debug("▩ ----- 삭제할 파일 존재: {}개", deleteFileSeqList.size());
+	        fileService.removeFiles(userId, post.getAttachGrpId(), deleteFileSeqList);
+	    }
+		
+	    if(attachFiles != null && attachFiles.length > 0) {
+	        log.debug("▩ ----- 새 첨부파일 존재함.");
+	        List<FilesVO> fileVOList = fileService.createFile(attachFiles, CMMN_CD_BOARD, userId, post.getAttachGrpId());
+
+	        if(fileVOList == null || fileVOList.isEmpty()) {
+	            body.put("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
+	        }
+	    } else {
+	        log.debug("▩ ----- 새 첨부파일 없음.");
+	    }
+		
+		post.setUpdtId(userId);
+		boardDAO.updatePost(post);
+		
+
+	    body.put("postId", post.getPostId());
+		return "redirect:/board/"+BOARD_CATE+"/post/"+ post.getPostId();
+	}
+
+	@Override
+	public void removePost(String username, String postId) {
+		log.debug("▩▩▩ BoardService .removePost() 호출.");
+
+		if(username != null && postId != null) {
+			log.debug("▩ ----- 파라미터 둘 모두 존재, 정상적.");
+			
+			PostsVO post = boardDAO.selectPostDetail(postId);
+			
+			if(post != null && username.equals(postId)) {
+				log.debug("▩ ----- USERNAME == POST.USER_ID 본인 확인 완료");
+				
+				boardDAO.deletePost(postId);
+			}
+		}
+	}
+
+	@Override
+	public void readComments(Map<String, Object> body, String postId) {
+		log.debug("▩▩▩ BoardService .readComments() 호출.");
+		
+		List<CommentsVO> cmtList = boardDAO.selectCommentList(postId);
+		log.debug("▩ ----- 불러온 댓글: {} ", cmtList);
+		body.put("cmtList" , cmtList);
+	}
+
+	@Override
+	public void createComment(Map<String, Object> body, CommentsVO cmt, String postId, String username) {
+		log.debug("▩▩▩ BoardService .createComment() 호출.");
+		
+		log.debug("▩ ----- POST_ID : {}, USERNAME : {}", postId, username);
+		cmt.setPostId(postId);
+		cmt.setUserId(username);
+		cmt.setRgstId(username);
+		cmt.setUpdtId(username);
+		cmt.setHiddenYn("N");
+		cmt.setBannedYn("N");
+		
+		Integer cmtOrder = boardDAO.selectNextCommentOrder(postId, cmt.getCmtParentId());
+		cmt.setCmtOrder(cmtOrder);
+		
+		boardDAO.insertComment(cmt);
+		log.debug("▩ ----- 등록된 댓글 : {}", cmt);
+		
+		body.put("cmt", cmt);
+	}
+
+	@Override
+	public void modifyComment(Map<String, Object> body, CommentsVO cmt, String username) {
+		log.debug("▩▩▩ BoardService .modifyComment() 호출.");
+		
+		cmt.setUpdtId(username);
+		cmt.setHiddenYn("N");
+		
+		boardDAO.updateComment(cmt);
+		log.debug("▩ ----- 수정된 댓글 : {}", cmt);
+		
+		body.put("cmtId", cmt.getCmtId());
+	}
+
+	@Override
+	public void removeComment(Map<String, Object> body, String cmtId, String username) {
+		log.debug("▩▩▩ BoardService .removeComment() 호출.");
+		
+		boardDAO.deleteComment(username, cmtId);
+		log.debug("▩ ----- 삭제된 댓글 : {}", cmtId);
+		
+		body.put("cmtId", cmtId);
 	}
 }

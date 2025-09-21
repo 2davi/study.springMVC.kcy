@@ -6,6 +6,8 @@ package kr.letech.study.cmmn.file.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.letech.study.cmmn.file.vo.FilesVO;
@@ -25,13 +27,16 @@ import kr.letech.study.cmmn.file.vo.FilesVO;
 public interface FileService {
 
 
-	
+
 	public List<FilesVO> readAttachFileList(String attachGrpId);
 
 	public FilesVO createFile(MultipartFile multipart, String attachType, String userId);
 	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId);
+	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId, String attachGrpId);
 	public FilesVO modifyFile(MultipartFile multipart, String attachType, String userId, String fileGrpId_nullable);
 	public void removeFile(String userId, String fileGrpId);
+	public void removeFiles(String userId, String fileGrpId, List<String> deleteFileSeqList);
+	public void downloadFile(String fileGrpId, String fileSeq, HttpServletResponse response);
 	
 	/** 간단 기능 */
 	public String readUserProfileImgSrc(String profileGrpId);

@@ -21,22 +21,32 @@
 					<div class="form-label">
 						<label for="postTitle">제목: </label>
 					</div>
-					<input type="text" id="postTitle" name="postTitle" value="${ }" />
+					<input type="text" id="postTitle" name="postTitle" value="${post.postTitle }" />
 				</div>
 				<div class="form-attr">
 					<div class="form-label">
 						<label for="postContent">내용: </label>
 					</div>
-					<textarea id="postContent" name="postContent">${ }</textarea>
+					<textarea id="postContent" name="postContent">${post.postContent }</textarea>
 				</div>
 				<div class="form-attr">
 					<div class="form-label">
 						<label for="attachFiles">첨부파일: </label>
 					</div>
 					<div>
-						<input type="file" id="attachFiles" name="attachFiles[]" multiple />
-						<div id="divAttachFilesList">
-							<ul id="ulAttachFilesList">
+						<input type="button" id="fakeAttachFiles" value="파일추가" onclick="fn_activateAttachFiles()" />
+						<input type="file" id="tempAttachFiles" onchange="fn_addAttachFiles(this)" multiple hidden /> 
+						
+						<div class="div-attach-file-list" id="divAttachFilesList">
+							<ul class="ul-attach-file-list" id="ulAttachFilesList">
+								<c:forEach var="file" items="${attachFileList}">
+									<c:if test="${file != null }">
+									<li data-type="old" data-seq="${file.fileSeq}">
+										${file.fileOrgNm}
+										<input type="checkbox" class="deleteOldFile" value="${file.fileSeq}"/> 삭제
+									</li>
+									</c:if>
+								</c:forEach>
 							</ul>
 						</div>
 					</div>
@@ -51,6 +61,8 @@
 		<div><!-- 페이지네이션 만큼 비워둘 공간 --></div>
 	</div>
 </div>
+<script>
 
+</script>
 </body>
 </html>
