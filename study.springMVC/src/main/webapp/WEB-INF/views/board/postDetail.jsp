@@ -79,7 +79,7 @@
 	<form>
 		<input type="hidden"  name="postId" value="${post.postId }" /> <!-- id="cmtPostId" -->
 		<input type="hidden"  name="cmtParentId" /> <!-- id="cmtParentId" -->
-		<input type="hidden"  name="cmtDepth" value="0" />
+		<input type="hidden"  name="cmtDepth" />
 		<textarea id="cmtContent" name="cmtContent"></textarea>
 		<input type="button" class="btn-save" value="등록" /> <!-- id="btnSaveCmt" --> 
 		<input type="button" class="btn-cancel" value="취소" /> <!-- id="btnCancleCmt" --> 
@@ -131,7 +131,8 @@ function toggle_updateCmt(btn) {
 	originalCmtDiv.appendChild(cmtForm);
 }
 function toggle_insertCmt(btn) {
-	const cmtParentId = btn.dataset.cmtParentId || null;
+	const cmtParentId = btn.dataset.cmtId || null;
+	const cmtDepth = btn.dataset.cmtDepth || 0;
 	//const cmtForm = document.getElementById("cmtForm").cloneNode(true);
 	const cmtForm = document.querySelector("#cmtForm").cloneNode(true);
 	const postId = btn.dataset.postId;
@@ -141,6 +142,7 @@ function toggle_insertCmt(btn) {
 	
 	// 댓글/답글 여부는 동적으로 처리
 	cmtForm.querySelector("input[name=cmtParentId]").value = cmtParentId;
+	cmtForm.querySelector("input[name=cmtDepth]").value = cmtDepth;
 
 	cmtForm.querySelector(".btn-save").value = "등록";
 	cmtForm.querySelector(".btn-save").onclick = async () => {
@@ -234,12 +236,14 @@ function renderComments(cmtList) {
 		sectionClone.removeAttribute("style");
 		sectionClone.dataset.cmtId = cmt.cmtId;
 		sectionClone.dataset.cmtParentId = cmt.cmtParentId || "";
+		sectionClone.dataset.cmtDepth = cmt.cmtDepth;
 		sectionClone.style.display = "flex";
 		sectionClone.style.marginLeft = (cmt.cmtDepth * 20) + "px";
 		
 		sectionClone.querySelector(".cmt-user").innerText = cmt.userId;
 		sectionClone.querySelector(".cmt-time").innerText = formatDate(cmt.rgstDt);
 		sectionClone.querySelector(".cmt-content").innerText = cmt.cmtContent;
+		
 		
 		const btnDelete = sectionClone.querySelector(".btn-comment-delete");
 		const btnUpdate = sectionClone.querySelector(".btn-comment-update");
@@ -256,7 +260,7 @@ function renderComments(cmtList) {
 			btnUpdate.onclick = () => toggle_updateCmt(btnUpdate);
 		}
 		btnReply.dataset.cmtId = cmt.cmtId;
-		btnReply.dataset.cmtDepth = cmt.cmtDepth;
+		btnReply.dataset.cmtDepth = cmt.cmtDepth + 1;
 		btnReply.onclick = () => toggle_insertCmt(btnReply);
 		
 		commentTree.appendChild(sectionClone);

@@ -66,14 +66,14 @@
 		</div>
 		<div><!-- 글 등록버튼 -->
 			<input type="button" value="등록" onclick="fn_submitPost()" />
-			<input type="reset" value="초기화" />
+			<input type="button" value="초기화" onclick="fn_resetPost()"/>
 		</div>
 			</form>
 		<div><!-- 페이지네이션 만큼 비워둘 공간 --></div>
 	</div>
 </div>
 
-<script defer >
+<script >
 const postForm = document.getElementById('postForm');
 const boardCd = document.getElementById('boardCd');
 const postTitle = document.getElementById('postTitle');
@@ -151,7 +151,11 @@ async function fn_submitPost() {
 	formData.append('boardCd', boardCd.value);
 	formData.append('postTitle', postTitle.value);
 	formData.append('postContent', postContent.value);
-	attachFiles.forEach(f => formData.append('attachFiles', f));
+	attachFiles.forEach(f => {
+		formData.append('attachFiles', f);
+		// 0922_파일 메타정보 컬럼 추가
+		formData.append('lastModified', f.lastModified);
+	});
 	
 	try {
 		const resp = await fetch(postForm.action, {
@@ -176,6 +180,13 @@ async function fn_submitPost() {
 	} catch (error) {
 		console.error('업로드 실패:', error);
 	}
+}
+
+function fn_resetPost() {
+	postForm.reset();
+	attachFiles = [];
+	console.debug("attachFiles:: ", attachFiles);
+	renderList();
 }
 	
 	

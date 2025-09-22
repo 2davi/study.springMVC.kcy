@@ -21,6 +21,7 @@ import kr.letech.study.cmmn.file.vo.FilesVO;
  *  수정일			수정자			수정내용
  *  ------------------------------------------------
  *  2025-09-17		KCY				최초 생성
+ *  2025-09-22		KCY				게시글 첨부파일 수정 기능 추가
  */
 @Mapper
 public interface FilesDAO {
@@ -44,4 +45,5 @@ public interface FilesDAO {
 	public String selectFileRefNm(String profileGrpId);
 	public List<String> selectFileRefNmList(String userId, String attachType);
 	public List<Map<String, Object>> selectAttachFileCount(List<String> attachGrpIdList);
+	public String selectLastSeq(String fileGrpId);
 }

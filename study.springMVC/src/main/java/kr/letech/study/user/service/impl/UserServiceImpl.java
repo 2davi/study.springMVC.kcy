@@ -195,6 +195,7 @@ public class UserServiceImpl implements UserService{
 	public List<UserVO> readUserList(SearchVO search) {
 		log.debug("▩▩▩ UserService .readUserList() 호출.");
 		
+		log.debug("▩ ----- 문제 원인 찾기 : term - {}", search.getTerm());
 		return userDAO.selectUserList(search);
 	}
 

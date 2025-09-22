@@ -30,6 +30,7 @@ import kr.letech.study.board.vo.PostsVO;
 import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.sec.annotation.CurrentUser;
 import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
+import kr.letech.study.cmmn.utils.PercentDecoder;
 import kr.letech.study.cmmn.vo.SearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,8 @@ import lombok.extern.slf4j.Slf4j;
  *  ------------------------------------------------
  *  2025-09-16		KCY				최초 생성
  *  2025-09-17		KCY				URL 매핑 작업
- *  2025-09-19		KCY				
+ *  2025-09-19		KCY				게시판 CRUD 시작
+ *  2025-09-22		KCY				단일게시판 CRUD 완성
  */
 @Controller
 @Slf4j
@@ -56,6 +58,7 @@ public class BoardController {
 	
 	private final BoardService boardService;
 	private final FileService fileService;
+	@SuppressWarnings("unused")
 	private final MessageSource messageSource;
 	private final String BOARD_CATE = "forum";
 	
@@ -68,7 +71,6 @@ public class BoardController {
 	
 //	- (목록) : GET	/board/forum/list
 //	- (검색) : GET	/board/forum/list?key=...&value=...
-	@SuppressWarnings("unchecked")
 	@GetMapping("/{boardCate}/list")
 	public String postList(Model model
 			, @PathVariable("boardCate") String boardCd
@@ -76,11 +78,15 @@ public class BoardController {
 			, @RequestParam(name="term", required=false, defaultValue="default") String term) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/list (BoardController) 연결.");
 	
-		SearchVO search = new SearchVO(keyword, term);
+		/** 검색 파라미터 검증 */
+		SearchVO search= PercentDecoder.searchParamValidate(keyword, term);
+		
+		/** 게시글 목록 조회 서비스 실행 */
 		List<PostsVO> postList = boardService.readPostList(model, search);
 
 		//첨부파일 수도 세보자.
 
+		/** 모델&뷰레이어 반환 */
 		model.addAttribute("postList", postList);
 		return "board/postList.tiles";
 	}
@@ -93,10 +99,13 @@ public class BoardController {
 			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post (BoardController) 연결.");
 		
-		PostsVO post = boardService.readPostDetail(model, postId);
+	    /** 로그인 정보 조회 */
+		String username = user.getUsername();
 		
-		model.addAttribute("username", user.getUsername());
-		log.debug("▩ ----- 로그인한 회원: {}, 게시글 작성자: {}", user.getUsername(), post.getUserId());
+		/** 게시글 상세 조회 서비스 실행 */
+		boardService.readPostDetail(model, postId, username);
+		
+		/** 뷰레이어 반환 */
 		return "board/postDetail.tiles";
 	}
 	
@@ -106,7 +115,7 @@ public class BoardController {
 			) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post/insert (BoardController) 연결.");
 		
-		
+		/** 뷰레이어 반환 */
 		return "board/postInsert.tiles";
 	}
 
@@ -114,51 +123,62 @@ public class BoardController {
 	@GetMapping("/{boardCate}/post/update")
 	public String postUpdate(Model model
 			, @RequestParam("postId") String postId
+			, @CurrentUser UserDetailsVO user
 			) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post/update (BoardController) 연결.");
 		
-		boardService.readPostDetail(model, postId);
+	    /** 로그인 정보 조회 */
+		String username = user.getUsername();
 		
+		/** 게시글 수정 데이터 조회 서비스 실행 */
+		boardService.readPostDetail(model, postId, username);
+		
+		/** 뷰레이어 반환 */
 		return "board/postUpdate.tiles";
 	}
 
 
 //	- (등록) : POST	/board/post/insert
-	@PostMapping(value="/post/insert", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@PostMapping(value="/post/insert", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> postInsert(Model model
 			, @ModelAttribute PostsVO post
 			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
+			, @RequestParam(name="lastModified", required=false) List<Long> lastModifiedList
 			, @CurrentUser UserDetailsVO user
 			) {
 		log.debug("▩▩▩ URL: POST/board/post/insert (BoardController) 연결.");
 	    log.debug("첨부파일 개수: {}", attachFiles != null ? attachFiles.length : 0);
 		
-		String userId = user.getUsername();
+	    /** 로그인 정보 조회 */
+		String username = user.getUsername();
 		
+		/** 게시글 등록 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
-		boardService.createPost(body, post, attachFiles, userId);
+		boardService.createPost(body, post, attachFiles, lastModifiedList, username);
 
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	
 	
 //	- (수정) : POST	/board/post/update
-	@PostMapping(value="/post/update", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@PostMapping(value="/post/update", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> postUpdate(
 			@ModelAttribute PostsVO post
 			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
 			, @RequestParam(name="deleteFileSeq", required=false) List<String> deleteFileSeqList
+			, @RequestParam(name="lastModified", required=false) List<Long> lastModifiedList
 			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/post/update (BoardController) 연결.");
 		
-		String boardCate = BOARD_CATE;
-		String userId = user.getUsername();
+		/** 로그인 정보 조회 */
+		String username = user.getUsername();
 		
+		/** 게시글 수정 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
-		boardService.modifyPost(body, post, attachFiles, deleteFileSeqList, userId);
+		boardService.modifyPost(body, post, attachFiles, deleteFileSeqList, lastModifiedList, username);
 
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	
@@ -171,9 +191,15 @@ public class BoardController {
 			) {
 		log.debug("▩▩▩ URL: POST/board/post/delete (BoardController) 연결.");
 		
-		boardService.removePost(user.getUsername(), postId);
 		
+		/** 로그인 정보 & 게시판 카테고리 조회 */
 		String boardCate = BOARD_CATE;
+		String username = user.getUsername();
+		
+		/** 게시글 삭제 서비스 실행 */
+		boardService.removePost(username, postId);
+		
+		/** 비동기 응답 반환 */
 		return "redirect:/board/"+boardCate+"/list";
 	}
 
@@ -186,74 +212,86 @@ public class BoardController {
 			) {
 		log.debug("▩▩▩ URL: GET/board/attach/select (BoardController) 연결.");
 		
+		/** 파일 다운로드 서비스 실행 */
 		fileService.downloadFile(fileGrpId, fileSeq, response);
 	}
 	
 	
 //	- (덧글조회) : POST /board/comment/select
-	@GetMapping(value="/comment/select", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@GetMapping(value="/comment/select", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentSelect(
 			@RequestParam("postId") String postId
 			, @CurrentUser UserDetailsVO user
 			) {
 		log.debug("▩▩▩ URL: GET/board/comment/select (BoardController) 연결.");
-		log.debug("▩ ----- 파라미터 검증 : POST_ID : {}", postId);
 		
+		/** 로그인 정보 조회 */
 		String username = user.getUsername();
-		Map<String, Object> body = new HashMap<>();
-		boardService.readComments(body, postId);
 		
-		body.put("username", username);
+		/** 덧글 조회 서비스 실행 */
+		Map<String, Object> body = new HashMap<>();
+		boardService.readComments(body, postId, username);
+		
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글등록) : POST /board/comment/insert
-	@PostMapping(value="/comment/insert", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@PostMapping(value="/comment/insert", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentInsert(
 			@RequestBody CommentsVO comment
 			, @CurrentUser UserDetailsVO user
 			) {
 		log.debug("▩▩▩ URL: POST/board/comment/insert (BoardController) 연결.");
 
+		/** 로그인 정보 조회 */
 		String username = user.getUsername();
+		
+		/** 덧글 등록 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
 		boardService.createComment(body, comment, comment.getPostId(), username);
 		
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글수정) : POST /board/comment/update
-	@PostMapping(value="/comment/update", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@PostMapping(value="/comment/update", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentUpdate(
 			@RequestBody CommentsVO comment
 			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/comment/update (BoardController) 연결.");
 
+		/** 로그인 정보 조회 */
 		String username = user.getUsername();
+		
+		/** 덧글 수정 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
 		boardService.modifyComment(body, comment, username);
 		
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	
 //	- (덧글삭제) : POST /board/comment/delete
-	@PostMapping(value="/comment/delete", produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
+	@PostMapping(value="/comment/delete", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentDelete(
 			@RequestBody Map<String, String> payload
 			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/comment/delete (BoardController) 연결.");
 		
+		/** 로그인 정보 조회 */
+		String username = user.getUsername();
+		
+		//---
 		String cmtId = payload.get("cmtId");
 		log.debug("▩ ----- 파라미터 검증 : CMT_ID : {}", cmtId);
 		
-		String username = user.getUsername();
+		/** 덧글 삭제 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
 		boardService.removeComment(body, cmtId, username);
 		
+		/** 비동기 응답 반환 */
 		return ResponseEntity.ok(body);
 	}
 	

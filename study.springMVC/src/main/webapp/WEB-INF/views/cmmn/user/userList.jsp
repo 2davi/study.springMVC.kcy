@@ -6,24 +6,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
-<script>
-function insertPage() {
-	location.href = "/cmmn/user/insert";
-}
-
-function searchId() {
-	console.debug(document.getElementById("searchBtn"), document.getElementById("searchTerm").value);
-	let searchKeyword = document.getElementById("searchKeyword").value;
-	let searchTerm = document.getElementById("searchTerm").value;
-	const uri = "/cmmn/user/list?key=" +searchKeyword+ "&value=" +searchTerm;
-	const urlSafeEncoded = encodeURI(uri);
-	location.href = uri;
-}
-
-function searchReset() {
-	location.href = "/cmmn/user/list";
-}
-</script>
 </head>
 <body>
 <h2>userList.jsp</h2>
@@ -41,6 +23,21 @@ function searchReset() {
 		<div><input type="button" id="searchBtn" value="검색" onclick="searchId()"/>
 			 <input type="button" id="searchReset" value="검색초기화" onclick="searchReset()" /></div>
 	</div>
+	<script>
+		window.addEventListener("DOMContentLoaded", () => {
+			
+			const params = new URLSearchParams(window.location.search);
+			const key = params.get("key");
+			const term= params.get("term");
+			
+			if(key != null) {
+				document.getElementById("searchKeyword").value = key;
+			}
+			if(term) {
+				document.getElementById("searchTerm").value = decodeURIComponent(term);
+			}
+		});
+	</script>
 </div>
 <div>
 	<table border="1">
@@ -75,7 +72,28 @@ function searchReset() {
 	<input type="button" value="일괄삭제" />
 </div>
 <script>
-document.getElementById('search').addEventListener('keydown', function(event) {
+const searchTerm = document.getElementById('searchTerm');
+
+function insertPage() {
+	location.href = "/cmmn/user/insert";
+}
+
+function searchId() {
+	console.debug(document.getElementById("searchBtn"), document.getElementById("searchTerm").value);
+	let searchKeyword = document.getElementById("searchKeyword").value;
+	let searchTerm = document.getElementById("searchTerm").value;
+	const uri = "/cmmn/user/list?key=" +searchKeyword+ "&term=" +searchTerm;
+	const urlSafeEncoded = encodeURI(uri);
+	console.debug("URI::: ", uri);
+	console.debug("urlSafeEncoded::: ", urlSafeEncoded);
+	location.href = urlSafeEncoded;
+}
+
+function searchReset() {
+	location.href = "/cmmn/user/list";
+}
+
+searchTerm.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         document.getElementById('searchBtn').click();

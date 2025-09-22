@@ -16,8 +16,8 @@
 	<sql id="search">
 		<if test='term neq "default" and keyword eq 0'>
 			AND (USER_ID LIKE CONCAT('%', #{term}, '%')
-		   		OR
-		   		USER_NM LIKE CONCAT('%', #{term}, '%')
+		   		-- OR
+		   		-- USER_NM LIKE CONCAT('%', #{term}, '%')
 		   		OR
 		   		POST_TITLE LIKE CONCAT('%', #{term}, '%')
 		   		OR
@@ -116,6 +116,7 @@
 		  FROM POSTS
 		 WHERE DEL_YN = 'N'
 			<include refid="search" />
+		 ORDER BY RGST_DT DESC
 			
 	</select>
 	
@@ -196,8 +197,8 @@
 			 , R.CMT_CONTENT
 			 , R.CMT_PARENT_ID
 			 , 0 AS CMT_DEPTH	-- JSP에서 margin-left 처리해주기 위해 기본값 처리
-			 -- , CAST( LPAD(R.CMT_ORDER, 5, '0' ) AS CHAR(200) ) AS CMT_PATH
-			 , LPAD(R.CMT_ORDER, 5, '0' ) AS CMT_PATH
+			 , CAST( LPAD(R.CMT_ORDER, 5, '0' ) AS CHAR(200) ) AS CMT_PATH
+			 -- , LPAD(R.CMT_ORDER, 5, '0' ) AS CMT_PATH
 			 , R.HIDDEN_YN
 			 , R.BANNED_YN
 			 , R.RGST_ID
@@ -247,7 +248,7 @@
 			 , UPDT_DT
 			 , DEL_YN
 		  FROM cmt_tree
-		 ORDER BY CMT_PATH
+		 ORDER BY CMT_PATH ASC, RGST_DT DESC
 	
 	</select>
 	

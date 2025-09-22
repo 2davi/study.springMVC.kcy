@@ -27,6 +27,7 @@
 		, FILE_DIR
 		, MIME_TYPE
 		, ATTACH_TYPE
+		, LAST_MODIFIED
 		, RGST_ID
 		, RGST_DT
 		, UPDT_ID
@@ -42,6 +43,7 @@
 		, #{fileDir}
 		, #{mimeType}
 		, #{attachType}
+		, #{lastModified}
 		, #{rgstId}
 		, NOW()
 		, #{updtId}
@@ -80,13 +82,12 @@
 			<include refid="filesInsert" />
 		)
 	</insert>
-	<insert id="insertFileList" parameterType="List">
+	<insert id="insertFileList" parameterType="list">
 		/** kr.letech.study.cmmn.file.dao.FilesDAO .insertFileList() - KCY */
 	
 		INSERT INTO FILES (
 			<include refid="filesColumns" />
-		)
-		VALUES
+		) VALUES
 			<foreach collection="list" item="file" separator=",">
 				(
 				#{file.fileGrpId}
@@ -97,6 +98,7 @@
 				, #{file.fileDir}
 				, #{file.mimeType}
 				, #{file.attachType}
+				, #{file.lastModified}
 				, #{file.rgstId}
 				, NOW()
 				, #{file.updtId}
@@ -104,6 +106,7 @@
 				, #{file.delYn}
 				)
 			</foreach>
+			
 	</insert>
 	
 	<update id="deleteFile" parameterType="Map">
@@ -114,6 +117,7 @@
 		     , UPDT_ID = #{userId}
 		     , UPDT_DT = NOW()
 		 WHERE FILE_GRP_ID = #{fileGrpId}
+		   AND FILE_SEQ = #{fileSeq}
 		
 	</update>
 	
@@ -153,5 +157,14 @@
 		   </foreach>
 		  GROUP BY FILE_GRP_ID
 		   
+	</select>
+	
+	<select id="selectLastSeq" parameterType="string" resultType="string">
+	/** kr.letech.study.cmmn.file.dao.FilesDAO .selectLastSeq() - KCY */
+		
+		SELECT MAX(FILE_SEQ)
+		  FROM FILES
+		 WHERE FILE_GRP_ID = #{fileGrpId}
+		 
 	</select>
 </mapper>

@@ -32,7 +32,7 @@ public interface FileService {
 
 	public FilesVO createFile(MultipartFile multipart, String attachType, String userId);
 	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId);
-	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId, String attachGrpId);
+	public List<FilesVO> createFile(MultipartFile[] multiparts, List<Long> lastModifiedList, String attachType, String userId, String attachGrpId);
 	public FilesVO modifyFile(MultipartFile multipart, String attachType, String userId, String fileGrpId_nullable);
 	public void removeFile(String userId, String fileGrpId);
 	public void removeFiles(String userId, String fileGrpId, List<String> deleteFileSeqList);

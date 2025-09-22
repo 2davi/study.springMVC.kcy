@@ -33,7 +33,14 @@ function listPage() {
 <div>
 	<table border="1">
 		<tr><th colspan="2">회원 정보</th></tr>
-		<tr><th>프로필 사진</th><td><img class="image-preview" src="${userProfileImgSrc }" alt="프로필_이미지" /></td></tr>
+		<tr>
+			<th>프로필 사진 <br/>
+				<input type="button" value="이미지 저장" onclick="fn_downloadProfileImg()"
+					<c:if test="${empty user.profileGrpId }">disabled</c:if>
+				/>
+			</th>
+			<td><img class="image-preview" src="${userProfileImgSrc }" alt="프로필_이미지" /></td>
+		</tr>
 		<tr><th>사용자 ID</th><td>${user.userId }</td></tr>
 		<%-- <tr><th>사용자 PW</th><td>${user.userPw }</td></tr> --%>
 		<tr><th>사용자 이름</th><td>${user.userNm }</td></tr>
@@ -97,7 +104,18 @@ function listPage() {
 	<input type="button" value="사용자삭제" onclick="deleteUser()"/>
 	<input type="button" value="목록" onclick="listPage()" />
 </div>
+<script>
+function fn_downloadProfileImg() {
+	
+	const profileGrpId = "${user.profileGrpId}";
+	if(profileGrpId !== null) {
+		location.href = `/cmmn/user/profile-img/select?profileGrpId=${user.profileGrpId}`;
+	} else {
+		return;
+	}
+}
 
+</script>
 
 </body>
 </html>

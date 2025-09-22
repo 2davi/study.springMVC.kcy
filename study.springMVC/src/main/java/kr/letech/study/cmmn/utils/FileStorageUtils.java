@@ -28,8 +28,12 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * < 개정이력 >
  * 
- * 수정일 수정자 수정내용 ------------------------------------------------ 2025-09-17 KCY
- * 최초 생성
+ *  수정일			수정자			수정내용
+ *  ------------------------------------------------
+ *  2025-09-17		KCY				최초 생성
+ *  2025-09-18		KCY				멀티파트 단건 등록 메소드 작성
+ *  2025-09-19		KCY				멀티파트 다건 등록 메소드 작성
+ *  2025-09-20		KCY				파일 다운로드 메소드 작성
  */
 @Component
 @Slf4j
@@ -50,7 +54,6 @@ public class FileStorageUtils {
 	 * @param param_attachType
 	 * @param userId
 	 */
-	@SuppressWarnings("finally")
 	public static FilesVO upload(MultipartFile multipart, String param_attachType, String userId) throws IOException {
 		log.debug("▩▩▩ FileStorageUtil .upload() 실행.");
 
@@ -106,10 +109,6 @@ public class FileStorageUtils {
 	public static List<FilesVO> upload(MultipartFile[] multiparts, String param_attachType, String userId) throws IOException {
 		log.debug("▩▩▩ FileStorageUtil .upload() 실행.");
 
-		//파일 업로드에 성공했는가 기본값 OK,
-		//실패 시 업로드 중단
-		Boolean isOk = true;
-		
 		if(multiparts != null) {
 			
 			List<FilesVO> fileVOList = new ArrayList<>();
@@ -171,13 +170,9 @@ public class FileStorageUtils {
 		}
 	}
 
-	public static List<FilesVO> upload(MultipartFile[] multiparts, String param_attachType, String userId, String attachGrpId) throws IOException {
+	public static List<FilesVO> upload(MultipartFile[] multiparts, List<Long> lastModifiedList, String param_attachType, String userId, String attachGrpId, String sequence) throws IOException {
 		log.debug("▩▩▩ FileStorageUtil .upload() 실행.");
 
-		//파일 업로드에 성공했는가 기본값 OK,
-		//실패 시 업로드 중단
-		Boolean isOk = true;
-		
 		if(multiparts != null) {
 			
 			List<FilesVO> fileVOList = new ArrayList<>();
@@ -186,19 +181,25 @@ public class FileStorageUtils {
 			String filePath = REPO_DIR + File.separatorChar + FILE_DIR_BOARD;
 			
 			String fileGroupId = null;
+			Integer seq = 0;
+			
+			// 만약에 넘겨받은 그룹아이디가 있다 => 기존에 파일 첨부가 이루어졌다.
+			//삭제 절차 진행하는 건 FileService에서! 
 			if(attachGrpId != null) {
 				log.debug("▩ ----- 등록된 첨부파일 그룹ID(UUID) 확인 완료 : {}", attachGrpId);
 				fileGroupId = attachGrpId;
+				seq = Integer.parseInt(sequence);
 			} else {
 				fileGroupId = UUID.randomUUID().toString();
 			}
 			
-			Integer seq = 0;
 			
 			
 			//로컬 디렉토리에 파일 여러 건 업로드
 			for(int i=0; i < multiparts.length; i++) {
 				MultipartFile multipart = multiparts[i];
+				// 0922_파일 메타정보 컬럼 추가
+				Long lastModified = lastModifiedList.get(i);
 				seq++;
 				
 				if(!multipart.isEmpty()) {
@@ -229,6 +230,7 @@ public class FileStorageUtils {
 					fileVO.setFileDir(FILE_DIR_BOARD);
 					fileVO.setAttachType(param_attachType);
 					fileVO.setMimeType(fileMimeType);
+					fileVO.setLastModified(lastModified);
 					fileVO.setRgstId(userId);
 					fileVO.setUpdtId(userId);
 					
@@ -245,43 +247,6 @@ public class FileStorageUtils {
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.overwrite()</i><br />
-	 * <b>파일 저장소에 저장된 파일 덮어쓰기</b><br />
-	 * <br />
-	 * 
-	 * @param file
-	 * @param filePath
-	 */
-	public static void overwrite(MultipartFile file, String filePath) {
-		log.debug("▩▩▩ FileStorageUtil .overwrite() 실행.");
-
-	}
-
-	/**
-	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.purge()</i><br />
-	 * <b>파일 저장소에서 저장된 실제 파일의 단건 물리 삭제</b><br />
-	 * <br />
-	 * 
-	 * @param filePath
-	 */
-	public static void purge(String filePath) {
-		log.debug("▩▩▩ FileStorageUtil .purge() 실행.");
-
-	}
-
-	/**
-	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.load()</i><br />
-	 * <b>파일 저장소에서 실제 파일 불러오기</b><br />
-	 * <br />
-	 * 
-	 * @param filePath
-	 */
-	public static void load(String filePath) {
-		log.debug("▩▩▩ FileStorageUtil .load() 실행.");
-
 	}
 	
 	/**
@@ -324,12 +289,53 @@ public class FileStorageUtils {
 	}
 
 	/**
+	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.overwrite()</i><br />
+	 * <b>파일 저장소에 저장된 파일 덮어쓰기</b><br />
+	 * <br />
+	 * 
+	 * @param file
+	 * @param filePath
+	 */
+	@SuppressWarnings("unused")
+	public static void overwrite(MultipartFile file, String filePath) {
+		log.debug("▩▩▩ FileStorageUtil .overwrite() 실행.");
+
+	}
+
+	/**
+	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.purge()</i><br />
+	 * <b>파일 저장소에서 저장된 실제 파일의 단건 물리 삭제</b><br />
+	 * <br />
+	 * 
+	 * @param filePath
+	 */
+	@SuppressWarnings("unused")
+	public static void purge(String filePath) {
+		log.debug("▩▩▩ FileStorageUtil .purge() 실행.");
+
+	}
+
+	/**
+	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.load()</i><br />
+	 * <b>파일 저장소에서 실제 파일 불러오기</b><br />
+	 * <br />
+	 * 
+	 * @param filePath
+	 */
+	@SuppressWarnings("unused")
+	public static void load(String filePath) {
+		log.debug("▩▩▩ FileStorageUtil .load() 실행.");
+
+	}
+
+	/**
 	 * <i>kr.letech.study.cmmn.utils.FileStorageUtil.generateGroupId()</i><br />
 	 * <b>유틸성: FilesVO에 쓰일 FILE_GRP_ID 생성</b><br />
 	 * <br />
 	 * 
 	 * @param fileOriginalName
 	 */
+	@SuppressWarnings("unused")
 	private void generateGroupId(FilesVO fileVO) {
 		log.debug("▩▩▩ FileStorageUtil .generateGroupId() 실행.");
 
@@ -346,6 +352,7 @@ public class FileStorageUtils {
 	 * 
 	 * @param filePath
 	 */
+	@SuppressWarnings("unused")
 	private void isFileExists(String filePath) {
 		log.debug("▩▩▩ FileStorageUtil .isFileExists() 실행.");
 

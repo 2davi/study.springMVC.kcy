@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import kr.letech.study.board.dao.BoardDAO;
 import kr.letech.study.board.service.BoardService;
 import kr.letech.study.board.vo.CommentsVO;
@@ -50,19 +53,31 @@ public class BoardServiceImpl implements BoardService {
 	}
 	
 	@Override @Transactional
-	public PostsVO readPostDetail(Model model, String postId) {
+	public PostsVO readPostDetail(Model model, String postId, String username) {
 		log.debug("▩▩▩ BoardService .readPostDetail() 호출.");
 
-		PostsVO post = null;
-		post = boardDAO.selectPostDetail(postId);
-		model.addAttribute("post", post);
+		List<FilesVO> attachFileList = null;
+		String jsonAttachList = null;
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		PostsVO post = boardDAO.selectPostDetail(postId);
 		
-		if(post.getAttachGrpId() != null) {
-			List<FilesVO> attachFileList = fileService.readAttachFileList(post.getAttachGrpId());
-			model.addAttribute("attachFileList", attachFileList);
+		//---1. 상세조회 페이지에서 쓸 파일 리스트
+		if(!post.getAttachGrpId().isBlank()) {
+			attachFileList = fileService.readAttachFileList(post.getAttachGrpId());
 		}
 		
-		model.addAttribute("isOk", "이게 되나??");//된다
+		//---2. 수정 페이지에서 쓸 json 변환 문자열
+		try {
+			jsonAttachList = objectMapper.writeValueAsString(attachFileList);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		
+		model.addAttribute("post", post);
+		model.addAttribute("attachFileList", attachFileList);
+		model.addAttribute("jsonAttachList", jsonAttachList);
+		model.addAttribute("username", username);
 		return post;
 	}
 	
@@ -86,51 +101,20 @@ public class BoardServiceImpl implements BoardService {
 		boardDAO.insertPost(post);
 	}
 	
-//	@Override @Transactional
-//	public String createPost(Model model
-//			, PostsVO post
-//			, MultipartFile[] attachFiles
-//			, String userId) {
-//		log.debug("▩▩▩ BoardService .createPost() 호출.");
-//
-//		List<FilesVO> fileVOList = null;
-//		
-//		//파일이 존재하는지 체크 후 첨부파일 처리
-//		if(attachFiles != null && attachFiles.length > 0) {
-//			log.debug("▩ ----- 첨부파일 존재함.");
-//			fileVOList = fileService.createFile(attachFiles, CMMN_CD_BOARD, post.getUserId());
-//			
-//			String attachGrpId = fileVOList.get(0).getFileGrpId();
-//			
-//			if(attachFiles.length != fileVOList.size() || attachGrpId == null) {
-//				model.addAttribute("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
-//				model.addAttribute("post", post);
-//				return "redirect:/board/"+BOARD_CATE+"/post/insert";
-//			}
-//			post.setAttachGrpId(attachGrpId);
-//		
-//		} else {
-//			log.debug("▩ ----- 첨부파일 없음.");
-//		}
-//		
-//		createPost(post, userId);
-//		return "redirect:/board/"+BOARD_CATE+"/post?postId=" + post.getPostId();
-//	}
-	
-	
 	@Override @Transactional
 	public String createPost(Map<String, Object> body
 			, PostsVO post
 			, MultipartFile[] attachFiles
+			, List<Long> lastModifiedList
 			, String userId) {
 		log.debug("▩▩▩ BoardService .createPost() 호출.");
 
 		List<FilesVO> fileVOList = null;
-//		log.debug("▩ ----- attachFiles : {}", attachFiles.toString());
+		
 		//파일이 존재하는지 체크 후 첨부파일 처리
 		if(attachFiles != null && attachFiles.length > 0) {
 			log.debug("▩ ----- 첨부파일 존재함.");
-			fileVOList = fileService.createFile(attachFiles, CMMN_CD_BOARD, post.getUserId());
+			fileVOList = fileService.createFile(attachFiles, lastModifiedList, CMMN_CD_BOARD, post.getUserId(), post.getAttachGrpId());
 			
 			String attachGrpId = fileVOList.get(0).getFileGrpId();
 			
@@ -164,9 +148,11 @@ public class BoardServiceImpl implements BoardService {
 			, PostsVO post
 			, MultipartFile[] attachFiles
 			, List<String> deleteFileSeqList
+			, List<Long> lastModifiedList
 			, String userId) {
 		log.debug("▩▩▩ BoardService .modifyPost() 호출.");
 		
+		log.debug("▩ ----- deleteFileSeqList: {}", deleteFileSeqList);
 		
 		if(deleteFileSeqList != null && !deleteFileSeqList.isEmpty()) {
 	        log.debug("▩ ----- 삭제할 파일 존재: {}개", deleteFileSeqList.size());
@@ -175,7 +161,7 @@ public class BoardServiceImpl implements BoardService {
 		
 	    if(attachFiles != null && attachFiles.length > 0) {
 	        log.debug("▩ ----- 새 첨부파일 존재함.");
-	        List<FilesVO> fileVOList = fileService.createFile(attachFiles, CMMN_CD_BOARD, userId, post.getAttachGrpId());
+	        List<FilesVO> fileVOList = fileService.createFile(attachFiles, lastModifiedList, CMMN_CD_BOARD, userId, post.getAttachGrpId());
 
 	        if(fileVOList == null || fileVOList.isEmpty()) {
 	            body.put("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
@@ -184,10 +170,12 @@ public class BoardServiceImpl implements BoardService {
 	        log.debug("▩ ----- 새 첨부파일 없음.");
 	    }
 		
+
+		log.debug("▩▩▩ BoardService .modifyPost() 호출.");
 		post.setUpdtId(userId);
 		boardDAO.updatePost(post);
 		
-
+		body.put("boardCate", BOARD_CATE);
 	    body.put("postId", post.getPostId());
 		return "redirect:/board/"+BOARD_CATE+"/post/"+ post.getPostId();
 	}
@@ -209,12 +197,17 @@ public class BoardServiceImpl implements BoardService {
 		}
 	}
 
+	
+	
 	@Override
-	public void readComments(Map<String, Object> body, String postId) {
+	public void readComments(Map<String, Object> body, String postId, String username) {
 		log.debug("▩▩▩ BoardService .readComments() 호출.");
 		
 		List<CommentsVO> cmtList = boardDAO.selectCommentList(postId);
 		log.debug("▩ ----- 불러온 댓글: {} ", cmtList);
+		for(CommentsVO cmt: cmtList) {
+			log.debug("▩ ----- cmtPath : {}", cmt.getCmtPath());
+		}
 		body.put("cmtList" , cmtList);
 	}
 
@@ -237,6 +230,7 @@ public class BoardServiceImpl implements BoardService {
 		log.debug("▩ ----- 등록된 댓글 : {}", cmt);
 		
 		body.put("cmt", cmt);
+		body.put("username", username);
 	}
 
 	@Override

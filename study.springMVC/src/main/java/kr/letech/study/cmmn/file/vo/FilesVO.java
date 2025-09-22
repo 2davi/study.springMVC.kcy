@@ -30,6 +30,7 @@ public class FilesVO extends BaseVO implements Serializable{
 	private String  fileDir;
 	private String  attachType;
 	private String  mimeType;
+	private Long    lastModified;
 	
 	
 	/**
@@ -43,7 +44,7 @@ public class FilesVO extends BaseVO implements Serializable{
 	 */
 	public FilesVO() {}
 	public FilesVO(String fileGrpId, Integer fileSeq, String fileOrgNm, String fileRefNm, Long fileSize, String fileDir,
-			String attachType, String mimeType) {
+			String attachType, String mimeType, Long lastModified) {
 		super();
 		this.fileGrpId = fileGrpId;
 		this.fileSeq = fileSeq;
@@ -53,6 +54,7 @@ public class FilesVO extends BaseVO implements Serializable{
 		this.fileDir = fileDir;
 		this.attachType = attachType;
 		this.mimeType = mimeType;
+		this.lastModified = lastModified;
 	}
 	
 	
@@ -83,6 +85,9 @@ public class FilesVO extends BaseVO implements Serializable{
 	public String getMimeType() {
 		return mimeType;
 	}
+	public Long getLastModified() {
+		return lastModified;
+	}
 	public void setFileGrpId(String fileGrpId) {
 		this.fileGrpId = fileGrpId;
 	}
@@ -107,6 +112,9 @@ public class FilesVO extends BaseVO implements Serializable{
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 	}
+	public void setLastModified(Long lastModified) {
+		this.lastModified = lastModified;
+	}
 	
 	
 	@Override
@@ -116,6 +124,7 @@ public class FilesVO extends BaseVO implements Serializable{
 		result = prime * result + ((fileGrpId == null) ? 0 : fileGrpId.hashCode());
 		result = prime * result + ((fileSeq == null) ? 0 : fileSeq.hashCode());
 		result = prime * result + ((fileSize == null) ? 0 : fileSize.hashCode());
+		result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
 		return result;
 	}
 	@Override
@@ -142,11 +151,16 @@ public class FilesVO extends BaseVO implements Serializable{
 				return false;
 		} else if (!fileSize.equals(other.fileSize))
 			return false;
+		if (lastModified == null) {
+			if (other.lastModified != null)
+				return false;
+		} else if (!lastModified.equals(other.lastModified))
+			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
 		return "FileVO [fileGrpId=" + fileGrpId + ", fileSeq=" + fileSeq + ", fileOrgNm=" + fileOrgNm + ", fileRefNm="
-				+ fileRefNm + ", fileSize=" + fileSize + ", fileDir=" + fileDir + ", attachType=" + attachType + ", mimeType=" + mimeType + "]";
+				+ fileRefNm + ", fileSize=" + fileSize + ", fileDir=" + fileDir + ", attachType=" + attachType + ", mimeType=" + mimeType + ", lastModified=" + lastModified + "]";
 	}
 }

@@ -31,6 +31,21 @@
 			<div><input type="button" id="searchBtn" value="검색" onclick="searchId()"/>
 				 <input type="button" id="searchReset" value="검색초기화" onclick="searchReset()" /></div>
 		</div>
+		<script>
+			window.addEventListener("DOMContentLoaded", () => {
+				
+				const params = new URLSearchParams(window.location.search);
+				const key = params.get("key");
+				const term= params.get("term");
+				
+				if(key != null) {
+					document.getElementById("searchKeyword").value = key;
+				}
+				if(term) {
+					document.getElementById("searchTerm").value = decodeURIComponent(term);
+				}
+			});
+		</script>
 	</div>
 	<div><!-- 게시글 리스트가 위치할 3행 -->
 		<div><!-- 글 등록버튼(상단) -->
@@ -71,6 +86,15 @@ function fn_post_insertPage() {
 	
 	location.href = "/board/" +boardCate+ "/post/insert";
 }
+function searchId() {
+	console.debug(document.getElementById("searchBtn"), document.getElementById("searchTerm").value);
+	let searchKeyword = document.getElementById("searchKeyword").value;
+	let searchTerm = document.getElementById("searchTerm").value;
+	const uri = "/board/forum/list?key=" +searchKeyword+ "&term=" +searchTerm;
+	const urlSafeEncoded = encodeURI(uri);
+	location.href = uri;
+}
+
 </script>
 
 </body>

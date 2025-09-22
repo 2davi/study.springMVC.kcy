@@ -6,6 +6,9 @@ package kr.letech.study.user.controller;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,25 +62,25 @@ public class UserController {
 
 	@GetMapping("/list")
 	public String userList(Model model
-			, @RequestParam(value="key", required=false, defaultValue="0") Integer keyword
-			, @RequestParam(value="value", required=false, defaultValue="default") String term) {
+			, HttpServletRequest request
+			, @RequestParam(name="key", required=false, defaultValue="0") Integer keyword
+			, @RequestParam(name="term", required=false, defaultValue="default") String term) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/list (UserController) 연결.");
 
 		List<UserVO> userList = null;
-		SearchVO search = null;
 		
-		// 1. 파라미터 검증
-		// 잘못된 파라미터 초기화
+		/** 검색 파라미터 검증 */
+		//--- 파라미터 초기화
 		if(keyword != 0 && keyword != 1 && keyword != 2) {
 			keyword = 0;
 			term = "default";
 			
-			// 파라미터 디코딩
+		//--- 파라미터 디코딩
 		} else {
-			term = PercentDecoder.decode(term);			
+			term = PercentDecoder.decodeURLSafe(term);
 		}
 		log.debug("▩ SEARCH-BOX: KEYWORD = \"{}\", TERM = \"{}\"", keyword, term);
-		search = new SearchVO(keyword, term);
+		SearchVO search = new SearchVO(keyword, term);
 		
 
 		userList = userService.readUserList(search);
@@ -202,6 +205,15 @@ public class UserController {
 		
 		return logicalViewName;
 	}
+	
+	@GetMapping("/profile-img/select")
+	public void downloadProfileImg(HttpServletResponse response
+			,@RequestParam("profileGrpId") String profileGrpId) {
+		log.debug("▩▩▩ URL: GET/cmmn/user/detail/download (UserController) 연결.");
+		
+		fileService.downloadFile(profileGrpId, "1", response);
+	}
+	
 
 }
 

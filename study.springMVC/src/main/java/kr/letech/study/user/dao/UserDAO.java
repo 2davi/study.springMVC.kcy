@@ -34,7 +34,7 @@ public interface UserDAO {
 	public Integer updateUser(UserVO user);
 	public Integer deleteUser(String userId);
 	
-	public List<UserVO> selectUserListBySearch(String search);
+
 	public List<UserVO> selectUserList(SearchVO search);
 	
 	public List<String> selectUserRoles(String userId);

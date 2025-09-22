@@ -73,17 +73,6 @@
 		 WHERE USER_ID 		= #{userId}
 	</update>
 	
-	<select id="selectUserListBySearch" parameterType="string" resultType="kr.letech.study.user.vo.UserVO">
-	/** kr.letech.study.user.dao.UserDAO.selectUserListBySearch() - KCY */
-	
-		SELECT <include refid="userColumns" />
-		  FROM USER
-		 WHERE DEL_YN = 'N'
-		   AND (USER_ID LIKE CONCAT('%', #{search}, '%')
-		   		OR
-		   		USER_NM LIKE CONCAT('%', #{search}, '%'))
-	</select>
-	
 	<select id="selectUserRoles" parameterType="string" resultType="string">
 	/** kr.letech.study.user.dao.UserDAO.selectUserRole() - KCY */
 	
@@ -198,7 +187,7 @@
 		<if test='term neq "default" and keyword eq 0'>
 			AND (USER_ID LIKE CONCAT('%', #{term}, '%')
 		   		OR
-		   		POST_TITLE LIKE CONCAT('%', #{term}, '%')	)
+		   		USER_NM LIKE CONCAT('%', #{term}, '%')	)
 	   	</if>
 	   	<if test='term neq "default" and keyword eq 1'>
 	   		AND USER_ID LIKE CONCAT('%', #{term}, '%')

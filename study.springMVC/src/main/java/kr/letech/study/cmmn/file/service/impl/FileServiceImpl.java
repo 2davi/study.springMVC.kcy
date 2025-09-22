@@ -87,13 +87,23 @@ public class FileServiceImpl implements FileService {
 	}
 	
 	@Override @SuppressWarnings("finally")
-	public List<FilesVO> createFile(MultipartFile[] multiparts, String attachType, String userId, String attachGrpId) {
+	public List<FilesVO> createFile(MultipartFile[] multiparts, List<Long> lastModifiedList, String attachType, String userId, String attachGrpId) {
 		log.debug("▩▩▩ FileService .createFile() 호출.");
 		
 		List<FilesVO> fileVOList = new ArrayList<>();
-
+		String sequence = null;
+		
+		//---분기: 기존 파일의 수정 여부 확인 후 논리삭제
+		if(attachGrpId != null) {
+			//몽땅 삭제처리하고 업로드할 때 UPSERT할까?
+			removeFile(userId, attachGrpId);
+			sequence = fileDAO.selectLastSeq(attachGrpId);
+		}
+		
+		
+		//신규 파일 업로드
 		try {
-			fileVOList = FileStorageUtils.upload(multiparts, attachType, userId, attachGrpId);
+			fileVOList = FileStorageUtils.upload(multiparts, lastModifiedList, attachType, userId, attachGrpId, sequence);
 			
 			log.debug("▩ ----- fileVOList: {}", fileVOList.size());
 			fileDAO.insertFileList(fileVOList);
