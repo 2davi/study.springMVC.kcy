@@ -29,6 +29,7 @@
 <link rel="shortcut icon" type="image/png"
 	href="${RESOURCES_PATH}/images/logos/favicon.png" />
 <link rel="stylesheet" href="${RESOURCES_PATH}/css/styles.min.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 <title><tiles:insertAttribute name="title" /></title>
 </head>
 
@@ -45,7 +46,17 @@
 		</div>
 		<tiles:insertAttribute name="foot" />
 	</div>
+	<script src="${RESOURCES_PATH}/js/jquery-3.7.1.min" ></script>
 </body>
+<script>
+<!-- 0923_JQuery 기반 스크롤바 설정 -->
+$(document).ready(function() {
+	$(".page_content").addClass(".kcy_container::-webkit-scrollbar");
+	$(".page_content").addClass(".kcy_container::-webkit-scrollbar-track");
+	$(".page_content").addClass(".kcy_container::-webkit-scrollbar-thumb");
+	$(".page_content").addClass(".kcy_container::-webkit-scrollbar-button");
+});
 
+</script>
 </html>
 <!-- 0202 start -->

@@ -6,6 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+
 </head>
 <body>
 <h3>postList.jsp</h3>
@@ -14,7 +15,7 @@
 	<div><!-- 게시판 유형 위치할 1행 -->
 		<h2>자유게시판</h2>
 	</div>
-	<div><!-- 검색박스 위치할 2행 -->
+	<div class="container-lg"><!-- 검색박스 위치할 2행 -->
 		<div class="searchBox">
 			<div><label for="searchTerm">검색</label></div>
 			<div>
@@ -28,8 +29,10 @@
 				</select>
 			</div>
 			<input type="text" placeholder="검색어 입력" name="searchTerm" id="searchTerm"/>
-			<div><input type="button" id="searchBtn" value="검색" onclick="searchId()"/>
-				 <input type="button" id="searchReset" value="검색초기화" onclick="searchReset()" /></div>
+			<div>
+				<input type="button" id="searchBtn" value="검색" onclick="jq_searchId()"/>
+				<input type="button" id="searchReset" value="검색초기화" onclick="searchReset()" />
+			</div>
 		</div>
 		<script>
 			window.addEventListener("DOMContentLoaded", () => {
@@ -48,11 +51,11 @@
 		</script>
 	</div>
 	<div><!-- 게시글 리스트가 위치할 3행 -->
-		<div><!-- 글 등록버튼(상단) -->
+		<div class="container-lg"><!-- 글 등록버튼(상단) -->
 			<input type="button" class="id_insertPage" value="등록" onclick="fn_post_insertPage()" />
 		</div>
-		<div><!-- 게시글 목록 -->
-			<table border="1">
+		<div class="container-lg"><!-- 게시글 목록 -->
+			<table border="1" class="table table-bordered table-striped table-responsive-md table-hover">
 				<tr>
 					<th class="tb-post-cols-no">번호</th>
 					<th class="tb-post-cols-title">제목</th>
@@ -86,16 +89,24 @@ function fn_post_insertPage() {
 	
 	location.href = "/board/" +boardCate+ "/post/insert";
 }
-function searchId() {
+
+/* function searchId() {
 	console.debug(document.getElementById("searchBtn"), document.getElementById("searchTerm").value);
 	let searchKeyword = document.getElementById("searchKeyword").value;
 	let searchTerm = document.getElementById("searchTerm").value;
-	const uri = "/board/forum/list?key=" +searchKeyword+ "&term=" +searchTerm;
+	const uri = `/board/forum/list?key=\${searchKeyword}&term=\${searchTerm}`;
 	const urlSafeEncoded = encodeURI(uri);
 	location.href = uri;
+} */
+
+function jq_searchId() {
+	let searchKeyword = $("#searchKeyword").val();
+	console.debug("--------00: ", searchKeyword);
+	let searchTerm = $("#searchTerm").val();
+	console.debug("--------00: ", searchTerm);
+	const urlSafeEncoded = encodeURI(`/board/forum/list?key=\${searchKeyword}&term=\${searchTerm}`);
+	location.href = urlSafeEncoded;
 }
-
 </script>
-
 </body>
 </html>

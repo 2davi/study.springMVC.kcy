@@ -20,6 +20,7 @@
 			var RESOURCE_PATH = '${RESOURCES_PATH}';
 		</script> 
 		<link rel="stylesheet" href="${RESOURCES_PATH }/css/common.css">
+		<script src="${RESOURCES_PATH}/js/jquery-3.7.1.min" ></script>
 		<title><tiles:insertAttribute name="title" /></title>
  	</head>
  	<body>
