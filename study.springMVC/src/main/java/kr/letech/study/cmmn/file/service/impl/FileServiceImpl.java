@@ -150,6 +150,7 @@ public class FileServiceImpl implements FileService {
 	public void removeFiles(String userId, String fileGrpId, List<String> deleteFileSeqList) {
 		log.debug("▩▩▩ FileService .removeFiles() 호출.");
 		
+		log.debug("▩ ----- fileGrpId : {}, deleteFileSeqList : {}", fileGrpId, deleteFileSeqList);
 		fileDAO.deleteFiles(fileGrpId, userId, deleteFileSeqList);
 	}
 	

@@ -17,6 +17,7 @@
 		<div><!-- 글 등록버튼(상단) 만큼 비워둘 공간 --></div>
 		<div><!-- 게시글 목록 -->
 			<form id="postForm" method="POST" action="/board/post/update" enctype="multipart/form-data">
+				<input type="hidden" id="postId" name="postId" value="${post.postId }" />
 				<sec:csrfInput/>
 				<div class="form-attr">
 					<label for="boardCd">게시판 선택: 
@@ -51,6 +52,7 @@
 						<label for="attachFiles">첨부파일: </label>
 					</div>
 					<div>
+						<input type="hidden" id="postAttachGrpId" name="attachGrpId" value="${(post.attachGrpId != null) ?  post.attachGrpId : null}" />
 						<input type="button" id="fakeAttachFiles" value="파일추가" onclick="fn_activateAttachFiles()" />
 						<input type="file" id="tempAttachFiles" onchange="fn_addAttachFiles(this)" multiple hidden /> 
 						
@@ -80,9 +82,11 @@
 </div>
 <script defer>
 const postForm = document.getElementById('postForm');
+const postId = document.getElementById("postId");
 const boardCd = document.getElementById('boardCd');
 const postTitle = document.getElementById('postTitle');
 const postContent = document.getElementById('postContent');
+const postAttachGrpId = document.getElementById('postAttachGrpId');
 //const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
 //const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
 	
@@ -91,14 +95,15 @@ const tempAttachInput = document.getElementById('tempAttachFiles');
 	
 const attachList = document.getElementById('ulAttachFilesList');
 const jsonAttachList = ${jsonAttachList};
+let attachFiles = jsonAttachList.map(vo => ({
+	  name: vo.fileOrgNm
+	  , size: vo.fileSize
+	  , lastModified: vo.lastModified
+	  , seq: vo.fileSeq
+	}));
+let deleteFileSeq = new Set();
 console.debug("가져온 첨부파일 리스트: jsonAttachList {{},{},...}", jsonAttachList);
 
-
-let attachFiles = jsonAttachList.map(vo => ({
-  name: vo.fileOrgNm,
-  size: vo.fileSize,
-  lastModified: vo.lastModified
-}));
 	
 /** 커스텀 함수 */
 //-- dudupe(arr[]) : 동일 파일의 중복 첨부를 제거.
@@ -132,6 +137,11 @@ function renderList() {
 		delBtn.value= "삭제";
 		delBtn.onclick = () => {
 			attachFiles.splice(idx, 1);
+			console.debug("삭제버튼 클릭: f객체의 seq : ", f.seq);
+			deleteFileSeq.add(f.seq);
+			console.debug("deleteFileSeq: ", deleteFileSeq);
+			deleteFileSeq.delete(undefined);
+			console.debug("deleteFileSeq: ", deleteFileSeq);
 			renderList();
 		};
 		
@@ -160,27 +170,20 @@ function fn_addAttachFiles(input) {
 //-- fn_submitPost() : 폼 submit 이벤트를 대신 호출 
 async function fn_submitPost() {
 	console.debug("fn_submitPost() 실행.");
-	let jsonAttachList_copy = [...jsonAttachList];
-	console.debug("복제된 직후 jsonAttachList_copy: ", jsonAttachList_copy);
+	
 	const formData = new FormData();
 	formData.append('boardCd', boardCd.value);
 	formData.append('postTitle', postTitle.value);
 	formData.append('postContent', postContent.value);
-
+	formData.append('attachGrpId', postAttachGrpId.value);
 	attachFiles.forEach(f => {
 		formData.append('attachFiles', f);
 		// 0922_파일 메타정보 컬럼 추가
 		formData.append('lastModified', f.lastModified);
-		console.debug("++++++++++++++", f.lastModified);
-		jsonAttachList_copy = removeMatch(jsonAttachList, f);
-		console.debug("하나씩 삭제되가는 jsonAttachList_copy: ", jsonAttachList_copy);
 
 	});
-	let deleteFileSeq = jsonAttachList_copy.map(j => j.fileSeq);
-	formData.append('deleteFileSeq', deleteFileSeq);
+	deleteFileSeq.forEach(seq => formData.append('deleteFileSeq', seq))
 	console.debug("deleteFileSeq: ", deleteFileSeq);
-	
-	
 	
 	try {
 		const resp = await fetch(postForm.action, {
@@ -198,33 +201,17 @@ async function fn_submitPost() {
 			console.debug("Response 객체 DATA:: ", data);
 			
 			let boardCate = data.boardCate;
-			let postId = data.postId;
-			location.href = `/board/\${boardCate}/post?postId=\${postId}`;
-			console.debug("최종 주소:: ",`/board/\${boardCate}/post?postId=\${postId}` );
+			
+			console.debug("최종 주소:: ",`/board/\${boardCate}/post?postId=\${postId.value}` );
+			location.href = `/board/\${boardCate}/post?postId=\${postId.value}`;
 		}
 	} catch (error) {
 		console.error('업로드 실패:', error);
 	}
 }
-
-function removeMatch(jsonAttachList, f) {
-	console.debug("=-=-=-=removeMatch 타는 중");
-	const key_f = `\${f.name}_\${f.size}_\${f.lastModified}`;
-	console.debug("key_f:: ", key_f);
-	return jsonAttachList.filter(j => {
-		let isDeleted = true;
-		const key_j = `\${j.fileOrgNm}_\${j.fileSize}_\${j.lastModified}`;
-		console.debug("key_j:: ", key_j);
-		if(key_j === key_f) isDeleted = false;
-		return isDeleted;
-	})
-}
 	
 //브라우저 로딩 후 최초 렌더링
-renderList();
-
-	// 초기 렌더
-renderList();
+document.addEventListener("DOMContentLoaded", () => renderList());
 </script>
 </body>
 </html>

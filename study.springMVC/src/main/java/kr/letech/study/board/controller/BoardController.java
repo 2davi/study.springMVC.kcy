@@ -170,7 +170,7 @@ public class BoardController {
 			, @RequestParam(name="lastModified", required=false) List<Long> lastModifiedList
 			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: POST/board/post/update (BoardController) 연결.");
-		
+		log.debug("▩ ----- 0923_테스트: fileGrpId : {}", post.getAttachGrpId());
 		/** 로그인 정보 조회 */
 		String username = user.getUsername();
 		

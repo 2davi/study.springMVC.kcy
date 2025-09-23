@@ -88,7 +88,7 @@
 		INSERT INTO FILES (
 			<include refid="filesColumns" />
 		) VALUES
-			<foreach collection="list" item="file" separator=",">
+			<foreach collection="fileList" item="file" separator=",">
 				(
 				#{file.fileGrpId}
 				, #{file.fileSeq}

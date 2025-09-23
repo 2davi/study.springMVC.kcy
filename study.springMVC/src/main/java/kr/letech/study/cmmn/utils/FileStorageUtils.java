@@ -193,7 +193,7 @@ public class FileStorageUtils {
 				fileGroupId = UUID.randomUUID().toString();
 			}
 			
-			
+			log.debug("▩ ----- 시작 시퀀스 : {}", seq + 1);
 			
 			//로컬 디렉토리에 파일 여러 건 업로드
 			for(int i=0; i < multiparts.length; i++) {

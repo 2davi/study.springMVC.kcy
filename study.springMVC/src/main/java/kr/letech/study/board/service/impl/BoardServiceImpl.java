@@ -36,6 +36,8 @@ import lombok.extern.slf4j.Slf4j;
  *  ------------------------------------------------
  *  2025-09-16		KCY				최초 생성
  *  2025-09-19		KCY				최초 작업
+ *  2025-09-22		KCY				조회/등록/삭제 완성
+ *  2025-09-23		KCY				수정 기능 수정 중
  */
 @Service @Slf4j @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
@@ -60,9 +62,11 @@ public class BoardServiceImpl implements BoardService {
 		String jsonAttachList = null;
 		ObjectMapper objectMapper = new ObjectMapper();
 
+		log.debug("▩ ----- postId가 넘어오나요? : {}", postId);
 		PostsVO post = boardDAO.selectPostDetail(postId);
 		
 		//---1. 상세조회 페이지에서 쓸 파일 리스트
+		log.debug("▩ ----- 첨부파일 ID가 있나요? : {}", post);
 		if(!post.getAttachGrpId().isBlank()) {
 			attachFileList = fileService.readAttachFileList(post.getAttachGrpId());
 		}
@@ -174,6 +178,7 @@ public class BoardServiceImpl implements BoardService {
 		log.debug("▩▩▩ BoardService .modifyPost() 호출.");
 		post.setUpdtId(userId);
 		boardDAO.updatePost(post);
+		log.debug("▩ =+=+=+=+=+=+ 수정 끝나고 되돌려주는 post 확인염 : {}", post);
 		
 		body.put("boardCate", BOARD_CATE);
 	    body.put("postId", post.getPostId());

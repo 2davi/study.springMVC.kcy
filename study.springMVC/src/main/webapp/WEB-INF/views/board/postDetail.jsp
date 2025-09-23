@@ -85,7 +85,7 @@
 		<input type="button" class="btn-cancel" value="취소" /> <!-- id="btnCancleCmt" --> 
 	</form>
 </div>
-<script>
+<script defer>
 //Form 요소를 복사하려면 id가 중복될 수 있음
 //querySelector를 쓰는 방향으로 깔쌈하게 가는 게 나음.
 
@@ -181,6 +181,7 @@ function toggle_insertCmt(btn) {
     document.getElementById("cmtTree").appendChild(cmtForm);
   }
 }
+
 
 async function fn_deleteCmt(btn) {
 	const cmtId = btn.dataset.cmtId;

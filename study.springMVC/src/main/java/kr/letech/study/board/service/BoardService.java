@@ -25,6 +25,8 @@ import kr.letech.study.cmmn.vo.SearchVO;
  *  ------------------------------------------------
  *  2025-09-16		KCY				최초 생성
  *  2025-09-17		KCY				최초 작업
+ *  2025-09-22		KCY				조회/등록/삭제 완성
+ *  2025-09-23		KCY				수정 기능 수정 중
  */
 public interface BoardService {
 	public List<PostsVO> readPostList(Model model, SearchVO search);

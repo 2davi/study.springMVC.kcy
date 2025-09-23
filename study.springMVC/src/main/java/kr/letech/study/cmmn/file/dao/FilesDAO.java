@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import kr.letech.study.cmmn.file.vo.FilesVO;
 
@@ -29,7 +30,7 @@ public interface FilesDAO {
 	public FilesVO selectFile(Map<String, String> params);
 	public List<FilesVO> selectFileList(String fileGrpId);
 	public Integer insertFile(FilesVO file);
-	public Integer insertFileList(List<FilesVO> file);
+	public Integer insertFileList(@Param("fileList") List<FilesVO> fileList);
 	public Integer updateFile(FilesVO file);
 	public Integer mergeFile(FilesVO file);
 	
@@ -39,7 +40,9 @@ public interface FilesDAO {
 	 * @return
 	 */
 	public Integer deleteFile(Map<String, String> param);
-	public Integer deleteFiles(String fileGrpId, String userId, List<String> deleteFileSeqList);
+	public Integer deleteFiles(@Param("fileGrpId") String fileGrpId
+							  ,@Param("userId") String userId
+							  ,@Param("deleteFileSeqList") List<String> deleteFileSeqList);
 	
 	
 	public String selectFileRefNm(String profileGrpId);
