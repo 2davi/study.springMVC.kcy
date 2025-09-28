@@ -17,116 +17,141 @@
 	justify-content: center;
 }
 
-#formSecondCheck, #formChangePassword {
+#formSecondCheck, /* #formChangePassword */ {
 	display: none;
 }
 </style>
 </head>
 <body>
-	<h2>UpdateUser.jsp</h2>
-	<div>
-		<div>
-			<h3>사용자 정보 수정 페이지</h3>
+<div>
+	<h5>사용자 정보 수정</h5>
+</div>
+<div class="user-writer card shadow-sm">
+	<div class="card-body container w-75">
+	<form method="POST" action="/cmmn/user/update" enctype="multipart/form-data">
+	<sec:csrfInput/>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end">
+				<label class="form-label" for="userId">*사용자 ID: </label>
+				<input id="inputUserId" type="hidden" name="userId" value="${user.userId }" />
+			</div>
+			<div>
+				<input type="text" value="${user.userId }" class="form-control" readonly disabled />
+			</div>
 		</div>
-		<div>
-			<form method="POST" action="/cmmn/user/update"
-				enctype="multipart/form-data">
-
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userPw">*사용자 PW: </label>
+			</div>
+			<div id="formChangePassword">
 				<div class="form-attr">
 					<div class="form-label">
-						<label for="userId">*사용자 ID: </label>
-					</div>
-					<input type="text" value="${user.userId }" readonly disabled /> <input
-						id="inputUserId" type="hidden" name="userId"
-						value="${user.userId }" />
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label>*사용자 PW: </label>
-					</div>
-					<div id="divChangePassword">
-						<input type="button" id="btnChangePassword" name="changePassword" value="비밀번호 변경" onclick="fn_toggleChangePassword()"/>
-						<div id="formSecondCheck">
-							<input type="password" id="secondCheck" /> <input type="button"
-								id="cancelChangePassword" value="변경 취소" /> <input type="button"
-								id="confirmChangePassword" value="2차 확인" />
-						</div>
-						<div id="formChangePassword">
-							<div class="form-attr">
-								<div class="form-label">
-									<label for="userPw_new">*신규 비밀번호: </label>
-								</div>
-								<input type="password" id="userPw_new" name="userPw_new" />
-							</div>
-							<div class="form-attr">
-								<div class="form-label">
-									<label for="userPw_re">*비밀번호 확인: </label>
-								</div>
-								<input type="password" id="userPw_re" name="userPw_re" />
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="userNm">*사용자 이름: </label>
-					</div>
-					<input type="text" id="userNm" name="userNm"
-						value="${user.userNm }" />
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="regno1">사용자 주민번호: </label>
-					</div>
-					<input type="number" id="regno1" name="regno1"
-						value="${user.regno1 }" /> &nbsp;-&nbsp; <input type="number"
-						id="regno2" name="regno2" value="${user.regno2 }" />
-				</div>
-
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="userProfileImg">프로필 사진: </label> <input type="button"
-							id="deleteProfileImg" onclick="fn_deleteProfileImg()"
-							value="이미지 삭제" />
+						<label for="userPw">*신규 비밀번호: </label>
 					</div>
 					<div>
-						<div>
-							<img class="image-preview" id="previewImg"
-								src="${userProfileImgSrc }" onclick="fn_readImage()" accept=".jpg,.png,.webp" />
-						</div>
-						<input type="file" id="userProfileImg" name="userProfileImg"
-							class="form-control" />
-
+						<input type="password" id="userPw" name="userPw" class="form-control" />
 					</div>
 				</div>
-
-
-				<div class="form-attr">
+ 				<div class="form-attr">
 					<div class="form-label">
-						<label>사용자 권한: </label>
+						<label for="userPw_re">*비밀번호 확인: </label>
 					</div>
-
-					<c:forEach var="commonCode" items="${cmmnCodeList}">
-
-						<c:set var="isChecked" value="false" />
-						<c:forEach var="userRole" items="${userRoles }">
-							<c:if test="${userRole eq commonCode.cmmnCd }">
-								<c:set var="isChecked" value="true" />
-							</c:if>
-						</c:forEach>
-						<label> <input type="checkbox" name="userRoles"
-							value="${commonCode.cmmnCd}"
-							<c:if test="${isChecked}">checked</c:if> />
-							${commonCode.cmmnNm }
-						</label>
-					</c:forEach>
+					<div>
+						<input type="password" id="userPw_re" name="userPw_re" class="form-control" />
+					</div>
+				</div>
+			</div>
+<!-- 			<div id="divChangePassword">
+				<input type="button" id="btnChangePassword" name="changePassword" class="btn btn-sm btn-primary" value="비밀번호 변경" onclick="fn_toggleChangePassword()"/>
+				<div id="formSecondCheck">
+					<input type="password" id="secondCheck" class="form-control" />
+					<input type="button" id="cancelChangePassword" class="btn btn-sm btn-outline-primary" value="변경 취소" />
+					<input type="button" id="confirmChangePassword" class="btn btn-sm btn-outline-primary" value="2차 확인" />
+				</div>
+				<div id="formChangePassword">
+					<div class="form-attr">
+						<div class="form-label">
+							<label for="userPw_new">*신규 비밀번호: </label>
+						</div>
+						<div>
+							<input type="password" id="userPw_new" name="userPw_new" class="form-control" />
+						</div>
+					</div>
+					<div class="form-attr">
+						<div class="form-label">
+							<label for="userPw_re">*비밀번호 확인: </label>
+						</div>
+						<div>
+							<input type="password" id="userPw_re" name="userPw_re" class="form-control" />
+						</div>
+					</div>
+				</div>
+			</div> -->
+		</div>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userNm">*사용자 이름: </label>
+			</div>
+			<div>
+				<input type="text" id="userNm" name="userNm" class="form-control" value="${user.userNm }" />
+			</div>
+		</div>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="regno1">사용자 주민번호: </label>
+			</div>
+			<div>
+				<input type="number" id="regno1" name="regno1" class="form-control" value="${user.regno1 }" />
+				&nbsp;-&nbsp;
+				<input type="number" id="regno2" name="regno2" class="form-control" value="${user.regno2 }" />
+			</div>
+		</div>
+		
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userProfileImg">프로필 사진: </label>
+				<input type="button" id="deleteProfileImg" class="btn btn-sm btn-outline-dark" value="이미지 삭제" onclick="fn_deleteProfileImg()" />
+			</div>
+			<div>
+				<div>
+					<img class="image-preview" id="previewImg" src="${userProfileImgSrc }" onclick="fn_readImage()" accept=".jpg,.png,.webp" />
 				</div>
 				<div>
-					<input type="submit" value="수정" /> <input type="reset" value="초기화" />
+					<input type="file" id="userProfileImg" name="userProfileImg" class="form-control" />
 				</div>
-			</form>
+			</div>
 		</div>
+		<div class="form-attr gap-4">
+		    <div class="form-label text-end">
+		    	<label class="form-label">사용자 권한: </label>
+		    </div>
+			<c:forEach var="commonCode" items="${cmmnCodeList}">
+				<c:set var="isChecked" value="false" />
+				<c:forEach var="userRole" items="${userRoles }">
+					<c:if test="${userRole eq commonCode.cmmnCd }">
+						<c:set var="isChecked" value="true" />
+					</c:if>
+				</c:forEach>
+				<label> <input type="checkbox" name="userRoles"
+					value="${commonCode.cmmnCd}"
+					<c:if test="${isChecked}">checked</c:if> />
+					${commonCode.cmmnNm }
+				</label>
+			</c:forEach>
+		</div>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userNm"></label>
+			</div>
+			<div class="btn-group" role="user-insert-group" aria-label="Basic example">
+				<input type="submit" class="btn btn-sm btn-outline-primary" value="수정" />
+				<input type="reset"  class="btn btn-sm btn-outline-secondary" value="초기화" />
+				<input type="button" class="btn btn-sm btn-outline-danger" value="취소" onclick="fn_cancle()"/>
+			</div>
+		</div>
+	</form>
 	</div>
+</div>
 
 <script>
 
@@ -190,6 +215,14 @@ function fn_deleteProfileImg() {
 			location.href = "/cmmn/user/delete/img?userId=" + userId;			
 		}
 	}	
+}
+
+function fn_cancle() {
+	if(document.referrer) {
+		location.href = document.referrer;
+	} else {
+		location.href = "/cmmn/user/list";
+	}
 }
 
 function fn_toggleChangePassword() {

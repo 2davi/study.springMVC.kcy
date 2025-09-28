@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import kr.letech.study.cmmn.code.service.CommonCodeService;
 import kr.letech.study.cmmn.code.vo.CommonCodeVO;
 import kr.letech.study.cmmn.file.service.FileService;
+import kr.letech.study.cmmn.sec.annotation.CurrentUser;
+import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
 import kr.letech.study.cmmn.utils.FileStorageUtils;
 import kr.letech.study.cmmn.utils.PercentDecoder;
 import kr.letech.study.cmmn.vo.SearchVO;
@@ -64,7 +66,8 @@ public class UserController {
 	public String userList(Model model
 			, HttpServletRequest request
 			, @RequestParam(name="key", required=false, defaultValue="0") Integer keyword
-			, @RequestParam(name="term", required=false, defaultValue="default") String term) {
+			, @RequestParam(name="term", required=false, defaultValue="default") String term
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/list (UserController) 연결.");
 
 		List<UserVO> userList = null;
@@ -85,6 +88,7 @@ public class UserController {
 
 		userList = userService.readUserList(search);
 		
+		model.addAttribute("username", loginUser.getUsername());
 		model.addAttribute("userList", userList);
 		return "cmmn/user/userList.tiles";
 	}
@@ -92,7 +96,8 @@ public class UserController {
 	
 	@GetMapping("/detail")
 	public String userDetail(Model model
-			, @RequestParam("userId") String userId) {
+			, @RequestParam("userId") String userId
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/detail (UserController) 연결.");
 		
 		UserVO user = userService.readUserDetail(userId);
@@ -108,11 +113,13 @@ public class UserController {
 		model.addAttribute("userRoles", userRoles);
 		model.addAttribute("cmmnCodeList", cmmnCodeList);
 		model.addAttribute("userProfileImgSrc", userProfileImgSrc);
+		model.addAttribute("username", loginUser.getUsername());
 		return "cmmn/user/userDetail.tiles";
 	}
 	
 	@GetMapping("/insert")
-	public String userInsert(Model model) {
+	public String userInsert(Model model
+			, @CurrentUser UserDetailsVO user) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/insert (UserController) 연결.");
 
 		List<String> cmmnCodeParams = List.of("AA");
@@ -122,12 +129,14 @@ public class UserController {
 		String userProfileImgSrc = fileService.readUserProfileImgSrc(null);
 		
 		model.addAttribute("cmmnCodeList", cmmnCodeList);
+		//model.addAttribute("username", user.getUsername());
 		return "cmmn/user/userInsert.tiles";
 	}
 	
 	@GetMapping("/update")
 	public String userInsert(Model model
-			, @RequestParam("userId") String userId ) {
+			, @RequestParam("userId") String userId
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/update (UserController) 연결.");
 
 		log.info("▩ userId = {}", userId);
@@ -143,6 +152,7 @@ public class UserController {
 		model.addAttribute("userRoles", userRoles);
 		model.addAttribute("cmmnCodeList", cmmnCodeList);
 		model.addAttribute("userProfileImgSrc", userProfileImgSrc);
+		model.addAttribute("username", loginUser.getUsername());
 		return "cmmn/user/userUpdate.tiles";
 	}
 	
@@ -151,7 +161,8 @@ public class UserController {
 	public String userInsert(Model model
 			, /* @RequestAttribute("insertUser") */UserVO user
 			, @RequestParam(name="userRoles", required=false) List<String> userRoles
-			, @RequestParam(name="userProfileImg", required=false) MultipartFile multipart) {
+			, @RequestParam(name="userProfileImg", required=false) MultipartFile multipart
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: POST/cmmn/user/insert (UserController) 연결.");
 		
 		log.info("▩ FORM-USER : {}", user.toString());
@@ -161,6 +172,7 @@ public class UserController {
 		String logicalViewName = userService.createUser(model, user, userRoles, multipart);
 		
 //		return "redirect:/cmmn/user/detail?userId=" + user.getUserId(); <--시큐리티 처리 후 인가 처리당함
+		//model.addAttribute("username", loginUser.getUsername());
 		return logicalViewName;
 	}
 	
@@ -168,7 +180,8 @@ public class UserController {
 	public String userUpdate(Model model
 			, /* @RequestAttribute("user") */ UserVO user
 			, @RequestParam(name="userRoles", required=false) List<String> userRoles
-			, @RequestParam(name="userProfileImg", required=false) MultipartFile multipart) {
+			, @RequestParam(name="userProfileImg", required=false) MultipartFile multipart
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: POST/cmmn/user/update (UserController) 연결.");
 
 		log.info("▩ MULTIPART : {}", multipart.getOriginalFilename());
@@ -183,6 +196,7 @@ public class UserController {
 		//http://localhost:8080/cmmn/user/detail?userId=test02,test02 
 		String userId = user.getUserId();
 		log.info("▩ USER_ID : {}", userId);
+		model.addAttribute("username", loginUser.getUsername());
 		return logicalViewName;
 	}
 	

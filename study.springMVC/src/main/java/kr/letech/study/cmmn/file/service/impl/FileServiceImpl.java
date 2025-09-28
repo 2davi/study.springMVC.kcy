@@ -198,6 +198,8 @@ public class FileServiceImpl implements FileService {
 		return "/user-profile/" + fileRefNm;
 	}
 	
+
+	
 	@Override
 	public List<Map<String, Object>> readAttachFileCount(List<String> attachGrpIdList) {
 		log.debug("▩▩▩ FileService .readAttachFileCount() 호출.");

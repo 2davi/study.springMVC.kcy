@@ -17,6 +17,7 @@ import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +45,8 @@ public class UserLoginFailHandler implements AuthenticationFailureHandler {
 		
 		if(exception instanceof AuthenticationServiceException) {
 			request.setAttribute("loginFailMsg", "존재하지 않는 사용자입니다.");
+		} else if(exception instanceof UsernameNotFoundException) {
+			request.setAttribute("loginFailMsg",  "아이디 혹은 비밀번호가 틀립니다.");
 		} else if(exception instanceof BadCredentialsException) {
 			request.setAttribute("loginFailMsg", "아이디 혹은 비밀번호가 틀립니다.");
 		} else if(exception instanceof LockedException) {

@@ -16,45 +16,68 @@
 </style>
 </head>
 <body>
-<h2>InsertUser.jsp</h2>
 <div>
-	<div>
-		<h3>신규 사용자 정보 등록</h3>
-	</div>
-	<div>
-		<form id="userInfo" method="POST" enctype="multipart/form-data">
+	<h5>신규 사용자 등록</h5>
+</div>
+<div class="user-writer card shadow-sm">
+	<div class="card-body container w-75">
+	<form id="userInfo" method="POST" enctype="multipart/form-data">
+	<sec:csrfInput/>
 		
-		<div class="form-attr">
-			<div class="form-label"><label for="userId">*사용자 ID: </label></div>
-				<input type="text" id="userId" name="userId" />
+		<div class="form-attr gap-4">
+			<div class="form-label text-end">
+				<label class="form-label" for="userId">*사용자 ID: </label>
+			</div>
+			<div class="">
+				<input type="text" id="userId" name="userId" class="form-control" />
+			</div>
 		</div>
-		<div class="form-attr">
-			<div class="form-label"><label for="userPw">*사용자 PW: </label></div>
-				<input type="password" id="userPw" name="userPw" />
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userPw">*사용자 PW: </label>
+			</div>
+			<div class="">
+				<input type="password" id="userPw" name="userPw" class="form-control" />
+			</div>
 		</div>
-		<div class="form-attr">
-			<div class="form-label"><label for="userNm">*사용자 이름: </label></div>
-				<input type="text" id="userNm" name="userNm" />
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userNm">*사용자 이름: </label>
+			</div>
+			<div class="">
+				<input type="text" id="userNm" name="userNm" class="form-control" />
+			</div>
 		</div>
-		<div class="form-attr">
-			<div class="form-label"><label for="regno1">사용자 주민번호: </label></div>
-				<input type="number" id="regno1" name="regno1" />
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="regno1">사용자 주민번호: </label>
+			</div>
+			<div class="">
+				<input type="number" id="regno1" name="regno1" class="form-control" />
 				&nbsp;-&nbsp;
-				<input type="number" id="regno2" name="regno2" />
+				<input type="number" id="regno2" name="regno2" class="form-control" />
+			</div>
 		</div>
-		<div class="form-attr">
-			<div class="form-label"><label for="userProfileImg">프로필 사진: </label></div>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userProfileImg">프로필 사진: </label>
+			</div>
+			
+			<div class="">
 				<div>
 				<div>
 					<img class="image-preview" id="previewImg" src="${userProfileImgSrc }" onclick="fn_readImage()" />
 				</div>
 				<input type="file" id="userProfileImg" name="userProfileImg" class="form-control" accept=".jpg,.png,.webp" />
 			</div>
+			</div>
 		</div>
 		
 
-		<div class="form-attr">
-		    <div class="form-label"><label>사용자 권한: </label></div>
+		<div class="form-attr gap-4">
+		    <div class="form-label text-end">
+		    	<label class="form-label">사용자 권한: </label>
+		    </div>
 			<c:forEach var="commonCode" items="${cmmnCodeList}">
 		        <label>
 		        <input type="checkbox" name="userRoles" value="${commonCode.cmmnCd}" 
@@ -63,10 +86,15 @@
 		        </label>
 			</c:forEach>
 		</div>
-		<div>
-			<input type="submit" value="등록" />
-			<input type="reset" value="초기화" />
-			<input type="button" value="취소" onclick="fn_cancle()"/>
+		<div class="form-attr gap-4">
+			<div class="form-label text-end ">
+				<label class="form-label" for="userNm"></label>
+			</div>
+			<div class="btn-group" role="user-insert-group" aria-label="Basic example">
+				<input type="submit" class="btn btn-sm btn-outline-primary" value="등록" />
+				<input type="reset"  class="btn btn-sm btn-outline-secondary" value="초기화" />
+				<input type="button" class="btn btn-sm btn-outline-danger" value="취소" onclick="fn_cancle()"/>
+			</div>
 		</div>
 	</form>
 	</div>

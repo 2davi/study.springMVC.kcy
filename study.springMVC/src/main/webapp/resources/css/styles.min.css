@@ -15638,7 +15638,7 @@ textarea.form-control-lg {
   transition: 0.2s ease-in;
   position: fixed;
   left: 0;
-  right: 0;
+  /* right: 0; */
   height: 100%;
 }
 .left-sidebar .sidebartoggler {
@@ -15818,11 +15818,12 @@ textarea.form-control-lg {
   width: 100%;
   background: var(--bs-body-bg);
   padding: 0 10px;
-  top: 65px;
+  /* top: 65px; */
+  top: 0px;
 }
 @media (max-width: 991.98px) {
   .app-header {
-    top: 131px;
+    /* top: 131px; */
   }
 }
 .app-header .container-fluid, .app-header .container-sm, .app-header .container-md, .app-header .container-lg, .app-header .container-xl, .app-header .container-xxl {
@@ -15905,7 +15906,8 @@ body {
   border-radius: 20px;
 }
 .body-wrapper .body-wrapper-inner {
-  min-height: calc(100vh - 110px);
+  /* min-height: calc(100vh - 110px); */
+  min-height: calc(100vh - 150px);
 }
 .body-wrapper .container-fluid, .body-wrapper .container-sm, .body-wrapper .container-md, .body-wrapper .container-lg, .body-wrapper .container-xl, .body-wrapper .container-xxl {
   max-width: 1300px;
@@ -15931,7 +15933,7 @@ body {
 
 #main-wrapper[data-layout=vertical][data-sidebar-position=fixed] .left-sidebar {
   position: fixed;
-  top: 65px;
+  /* top: 65px; */
 }
 @media (max-width: 991.98px) {
   #main-wrapper[data-layout=vertical][data-sidebar-position=fixed] .left-sidebar {
@@ -15967,7 +15969,11 @@ body {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   }
   .left-sidebar .scroll-sidebar {
-    height: calc(100vh - 240px);
+    /* height: calc(100vh - 240px); */
+	overflow-y: auto;
+	padding: 0 24px;
+	height: 100%;  /* 또는 실제 필요한 높이만큼 */
+	border-radius: 7px;
   }
 }
 * {

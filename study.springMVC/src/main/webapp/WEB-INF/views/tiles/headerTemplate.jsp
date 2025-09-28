@@ -1,24 +1,100 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
-<div class="Header">
-	<div class="nav-bar">
-		<sec:authorize access="isAnonymous()">
-			<a href="/cmmn/user/insert">회원가입</a>
-			<a href="/cmmn/sec/loginForm">로그인</a>
-		</sec:authorize>
-		<sec:authorize access="isAuthenticated()">
-			<sec:authentication property="principal.userVO.userNm" />님 안녕하세요.&nbsp;&nbsp;
-			<a href="/">&nbsp;홈&nbsp;&nbsp;</a>|
-			<a href="/cmmn/user/list">&nbsp;사용자목록&nbsp;&nbsp;</a>|
-			<a href="/board/forum/list">&nbsp;게시판&nbsp;&nbsp;</a>|
-			<a href="/cmmn/sec/logout">&nbsp;로그아웃&nbsp;</a>
-		</sec:authorize>
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
+	<div class="app-header"> 요 클래스명으로 고쳐보자
+		<nav class="navbar navbar-expand-lg navbar-light">
+			<ul class="navbar-nav">
+				<li class="nav-item d-block d-xl-none"><a
+					class="nav-link sidebartoggler " id="headerCollapse"
+					href="javascript:void(0)"> <i class="ti ti-menu-2"></i>
+				</a></li>
+				<li class="nav-item dropdown"><a class="nav-link "
+					href="javascript:void(0)" id="drop1" data-bs-toggle="dropdown"
+					aria-expanded="false"> <i class="ti ti-bell"></i>
+						<div class="notification bg-primary rounded-circle"></div>
+				</a>
+					<div class="dropdown-menu dropdown-menu-animate-up"
+						aria-labelledby="drop1">
+						<div class="message-body">
+							<a href="javascript:void(0)" class="dropdown-item"> Item 1 </a> <a
+								href="javascript:void(0)" class="dropdown-item"> Item 2 </a>
+						</div>
+					</div></li>
+			</ul>
+			<div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+				<ul
+					class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+
+					<li class="nav-item dropdown">
+						<a class="nav-link "
+							href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
+							aria-expanded="false">
+							<sec:authorize access="isAuthenticated()">
+								<sec:authentication property="principal.userVO.userNm" />
+							</sec:authorize> 
+							<img src="${RESOURCES_PATH }/images/profile/user-1.jpg" alt="" width="35"
+								height="35" class="rounded-circle" />
+						</a>
+						<div
+							class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
+							aria-labelledby="drop2">
+							<div class="message-body">
+							<sec:authorize access="isAuthenticated()">
+								<a href="/cmmn/user/detail?userId=${username }" class="d-flex align-items-center gap-2 dropdown-item">
+									<i class="ti ti-user fs-6"></i>
+									<p class="mb-0 fs-3">My Account</p>
+								</a>
+								<a href="/cmmn/user/list" class="d-flex align-items-center gap-2 dropdown-item">
+									<i class="ti ti-mail fs-6"></i>
+									<p class="mb-0 fs-3">User Profile</p>
+								</a>
+								<a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+									<i class="ti ti-list-check fs-6"></i>
+									<p class="mb-0 fs-3">My Task</p>
+								</a>
+								<a href="/cmmn/sec/logout" class="btn btn-outline-danger mx-3 mt-2 d-block">
+									Logout
+								</a>
+							</sec:authorize>
+								<sec:authorize access="isAnonymous()">
+									<span class="btn btn-outline-secondary mx-3 mt-2 d-block" onclick="openLoginPopup()">
+										LogIn
+									</span>
+									<span class="btn btn-outline-primary mx-3 mt-2 d-block" onclick="openSignUpPage()">
+										SignUp
+									</span>
+								</sec:authorize>
+							</div>
+						</div></li>
+				</ul>
+			</div>
+		</nav>
+	</header>
+	<!--  Header End -->
+	<script defer>
+		$(document).ready(function() {
+			$(".nav-bar").css({
+				"position" : "relative",
+				"z-index" : "50",
+				"width" : "100%",
+				"padding" : "0 10px"
+			});
+			$(".navbar-nav").css("gap", "10px");
+
+		});
 		
+		// 0924_로그인페이지 팝업처리
+		function openLoginPopup() {
+			  window.open("/cmmn/sec/loginForm", "loginPopup", "width=600px,height=410px,scrollbars=yes");
+		}
+		
+		function openSignUpPage() {
+			location.href = "/cmmn/user/insert";
+		}
+		
+	</script>
 	
-	<!-- 
-		<span class="nav-attr" id="signin">회원가입</span>
-		<span class="nav-dist" id="dist"> | </span>
-		<span class="nav-attr" id="login"><a href="/cmmn/sec/login.do">로그인</a></span> -->
-	</div>
-</div>
+	
+	
+	
+	

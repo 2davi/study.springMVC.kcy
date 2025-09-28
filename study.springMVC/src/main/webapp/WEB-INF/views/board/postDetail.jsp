@@ -14,76 +14,118 @@
 </style>
 </head>
 <body>
-<h3>postDetail.jsp</h3>
-<p>${post.postId }</p>
-<div class="wrapper">
-	<div class="post-title" id="postTitle" data-post-id="${post.postId }">
-		<h2>${post.postTitle}</h2>
+	<div><!-- 게시판 유형 위치할 1행 -->
+		<h5>자유게시판</h5>
 	</div>
-	<div class="post-details">
-		<span>작성자: ${post.userId}</span> | <span>작성일: <fmt:formatDate value="${post.rgstDt}" pattern="yyyy-MM-dd HH:mm" /></span>
-		<c:if test="${post.updtDt != post.rgstDt}">
-           | <span>수정일: <fmt:formatDate value="${post.updtDt}" pattern="yyyy-MM-dd HH:mm" /></span>
-		</c:if>
-	</div>
-	<div class="post-content">
-		<pre style="white-space: pre-wrap;">${post.postContent}</pre>
-	</div>
-	<div class="post-attach">
-		<c:if test="${not empty attachFileList}">
-		    <h4>첨부파일</h4>
-		    <ul>
-		        <c:forEach var="file" items="${attachFileList}">
-		            <li>
-		                <a href="/board/attach/select?fileGrpId=${file.fileGrpId}&fileSeq=${file.fileSeq}">
-		                    ${file.fileOrgNm}
-		                </a>
-		                <span>(${file.fileSize} byte)</span>
-		            </li>
-		        </c:forEach>
-		    </ul>
-		</c:if>
-		<c:if test="${empty attachFileList}">
-		    <p>첨부파일 없음</p>
-		</c:if>
-		<div class="post-btn">
-			<c:if test="${username eq post.userId }">
-				<input type="button" value="삭제" onclick="fn_deletePost()" />
-				<input type="button" value="수정" onclick="fn_updatePost()" />
+<div class="post-details card">
+	<div class="card-header d-flex flex-row gap-4">
+		<div class="mt-2">
+			<h4>${post.postTitle }</h4>
+		</div>
+		<div class="mt-3">
+			<small>작성자: ${post.userId}</small> | <small class="text-muted">작성일: <fmt:formatDate value="${post.rgstDt}" pattern="yyyy-MM-dd HH:mm" /></small>
+			<c:if test="${post.updtDt != post.rgstDt}">
+	           | <small class="text-muted">수정일: <fmt:formatDate value="${post.updtDt}" pattern="yyyy-MM-dd HH:mm" /></small>
 			</c:if>
 		</div>
 	</div>
-	<div class="comment-insert-btn">
-		<input type="button" value="댓글등록_" data-post-id="${post.postId }" onclick="toggle_insertCmt(this)" />
+
+	<div class="card-body">
+		<p class="card-text">${post.postContent}</p>
 	</div>
-	<div class="comment-tree" id="cmtTree">
-		<!-- cloneNode로 댓글트리 출력 -->
+	<div class="card-body py-1 text-end">
+		<c:if test="${username eq post.userId }">
+			<input type="button" value="수정" class="btn btn-outline-primary btn-sm" onclick="fn_updatePost()" />
+			<input type="button" value="삭제" class="btn btn-outline-danger btn-sm" onclick="fn_deletePost()" />
+			<input type="button" value="덧글 등록" class="btn btn-sm btn-outline-success" data-post-id="${post.postId }" onclick="toggle_insertCmt(this)" />
+		</c:if>
+	</div>
+	<c:choose>
+	<c:when test="${not empty attachFileList }">
+	<div class="post-attach card m-4">
+		<div class="card-header d-flex flex-col gap-2">
+			<div class="mt-2">
+				<c:forEach var="file" items="${attachFileList}">
+		            <div classs="attach-file d-flex flex-row gap-3">
+		                <a href="/board/attach/select?fileGrpId=${file.fileGrpId}&fileSeq=${file.fileSeq}">
+		            	<i class="ti ti-chevron-down"></i>
+						<abbr>${file.fileOrgNm}</abbr>
+		                </a>
+		                <span class="text-muted">(${file.fileSize} byte)</span>
+		            </div>
+		        </c:forEach>
+			</div>
+		</div>
+	</div>
+	</c:when>
+	<c:otherwise>
+		<small class="m-4 text-muted"><em>첨부된 파일이 없습니다.</em></small>
+	</c:otherwise>
+	</c:choose>
+</div>
+<div class="card">
+	<div class="card-body">
+		<div class="comment-tree" id="cmtTree">
+			<!-- cloneNode로 댓글트리 출력 -->
+		</div>
+	</div>
+	<div class="card-body py-1 text-end">
+		<c:if test="${username eq post.userId }">
+			<input type="button" value="게시글 수정" class="btn btn-outline-primary btn-sm" onclick="fn_updatePost()" />
+			<input type="button" value="게시글 삭제" class="btn btn-outline-danger btn-sm" onclick="fn_deletePost()" />
+			<input type="button" value="덧글 등록" class="btn btn-sm btn-outline-success" data-post-id="${post.postId }" onclick="toggle_insertCmt(this)" />
+		</c:if>
 	</div>
 </div>
-<!-- 댓글용 템플릿 -->
-<div class="comment-section" id="cmtSection" style="display:none;" data-cmt-id="" data-cmt-parent-id="">
-	<div class="comment-meta" style="display:flex;flex-direction:row;">
-		<div><span class="cmt-user"></span></div>
-		<div><span class="cmt-time"></span></div>
-	</div>
-	<div class="comment-content">
-		<span class="cmt-content"></span>
-	</div>
-	<div class="comment-btn">
-		<input type="button" value="삭제" class="btn-comment-delete" />
-		<input type="button" value="수정" class="btn-comment-update" />
-		<input type="button" value="답글달기_"  class="btn-comment-reply" />
+<div class="cmt-template" style="display:none;">
+	<!-- 댓글용 템플릿 -->
+	<div class="comment-section d-flex gap-3 py-3 border-bottom align-items-start" id="cmtSection" style="display:none;" data-cmt-id="" data-cmt-parent-id="">
+
+	<!-- 프로필 이미지 -->
+	<img src="#" alt="user-avatar" class="rounded-circle flex-shrink-0" width="40" height="40" />
+
+	<!-- 본문 -->
+	<div class="flex-grow-1">
+		<div class="d-flex justify-content-between align-items-center mb-1">
+			<div class="d-flex align-items-center gap-2">
+				<span class="cmt-user fw-bold"></span>
+				<small class="cmt-time text-muted"></small>
+			</div>
+			<div class="btn-group btn-group-sm">
+				<button type="button" class="btn btn-outline-danger btn-comment-delete" style="display:none;">삭제</button>
+				<button type="button" class="btn btn-outline-primary btn-comment-update" style="display:none;">수정</button>
+				<button type="button" class="btn btn-outline-secondary btn-comment-reply">답글</button>
+			</div>
+		</div>
+		<div class="comment-content">
+			<span class="cmt-content mb-0 fs-6"></span>
+		</div>
 	</div>
 </div>
-<div class="comment-form" id="cmtForm">
-	<form>
-		<input type="hidden"  name="postId" value="${post.postId }" /> <!-- id="cmtPostId" -->
-		<input type="hidden"  name="cmtParentId" /> <!-- id="cmtParentId" -->
-		<input type="hidden"  name="cmtDepth" />
-		<textarea id="cmtContent" name="cmtContent"></textarea>
-		<input type="button" class="btn-save" value="등록" /> <!-- id="btnSaveCmt" --> 
-		<input type="button" class="btn-cancel" value="취소" /> <!-- id="btnCancleCmt" --> 
-	</form>
+<div class="comment-form card border-0 mb-2" id="cmtForm" style="display:none;">
+<div class="card-body py-2">
+<form class="d-flex gap-2 align-items-start">
+<!-- hidden field -->
+<input type="hidden" name="postId" value="${post.postId}" />
+<input type="hidden" name="cmtParentId" />
+<input type="hidden" name="cmtDepth" />
+
+<!-- 프로필 -->
+<img src="#" alt="me-avatar" class="rounded-circle flex-shrink-0" width="36" height="36" />
+
+<!-- 입력창 -->
+<div class="flex-grow-1">
+<textarea class="form-control" name="cmtContent" rows="2" placeholder="댓글을 입력하세요..."></textarea>
+</div>
+
+<!-- 버튼 -->
+<div class="d-flex flex-column gap-1">
+<button type="button" class="btn-save btn btn-sm btn-primary">등록</button>
+<button type="button" class="btn-cancel btn btn-sm btn-outline-secondary">취소</button>
+</div>
+</form>
+</div>
+</div>
 </div>
 <script defer>
 //Form 요소를 복사하려면 id가 중복될 수 있음
@@ -101,6 +143,7 @@ function toggle_updateCmt(btn) {
 	const cmtId = btn.dataset.cmtId;
 	const originalCmtDiv = btn.closest(".comment-section");
 	const originalCmtContent = originalCmtDiv.querySelector(".comment-content span").innerText;
+	//const originalCmtDiv.querySelector(".cmt-content")?.innerText || "";
 	const cmtForm = document.querySelector("#cmtForm").cloneNode(true);
 	cmtForm.id = "";
 	cmtForm.style.display = "flex";
@@ -146,9 +189,13 @@ function toggle_insertCmt(btn) {
 
 	cmtForm.querySelector(".btn-save").value = "등록";
 	cmtForm.querySelector(".btn-save").onclick = async () => {
+		console.debug("덧글수정버튼:: postId",cmtForm.querySelector("input[name=postId]").value);
+		console.debug("덧글수정버튼:: cmtContent",cmtForm.querySelector("textarea[name=cmtContent]").value );
+		console.debug("덧글수정버튼:: cmtDepth", cmtForm.querySelector("input[name=cmtDepth]").value);
 		const postId = cmtForm.querySelector("input[name=postId]").value;
 		const cmtDepth = cmtForm.querySelector("input[name=cmtDepth]").value;
 		const cmtContent = cmtForm.querySelector("textarea[name=cmtContent]").value;
+		
 		
 		const resp = await fetch("/board/comment/insert", {
 			method: "POST"
@@ -240,6 +287,8 @@ function renderComments(cmtList) {
 		sectionClone.dataset.cmtDepth = cmt.cmtDepth;
 		sectionClone.style.display = "flex";
 		sectionClone.style.marginLeft = (cmt.cmtDepth * 20) + "px";
+		//sectionClone.classList.add("ms-" + Math.min(cmt.cmtDepth * 20, 5));
+		console.debug("---sectionClone::: ", sectionClone.style);
 		
 		sectionClone.querySelector(".cmt-user").innerText = cmt.userId;
 		sectionClone.querySelector(".cmt-time").innerText = formatDate(cmt.rgstDt);

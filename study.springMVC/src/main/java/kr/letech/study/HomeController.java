@@ -1,6 +1,6 @@
 package kr.letech.study;
 
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -26,13 +26,17 @@ public class HomeController {
 	 * Simply selects the home view to render by returning its name.
 	 */
 	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String home(Locale locale, Model model) {
+	public String home(Locale locale, Model model/* , @CurrentUser UserDetailsVO user */) {
+		
+//		String username = user.getUsername();
 		
 		Date date = new Date();
-		DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
+		//DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
+		//String formattedDate = dateFormat.format(date);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		String formattedDate = sdf.format(date);
 		
-		String formattedDate = dateFormat.format(date);
-		
+//		model.addAttribute("username", username);
 		model.addAttribute("serverTime", formattedDate );
 		
 		log.info(helloService.hello());

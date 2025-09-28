@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import kr.letech.study.cmmn.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RequestMapping("/cmmn/sec/loginForm")
 public class LoginController {
-
+	
+	private final FileService fileService;
+	
 	/**
 	 * 로그인 화면
 	 * @param request
@@ -48,6 +51,7 @@ public class LoginController {
 			request.getSession().setAttribute("prevPage", request.getHeader("Referer"));
 		}
 		
-		return "cmmn/sec/loginForm.tiles";
+		return "cmmn/sec/loginForm.popups";
 	}
+
 }

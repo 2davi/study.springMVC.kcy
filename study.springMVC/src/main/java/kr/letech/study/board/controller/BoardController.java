@@ -30,7 +30,6 @@ import kr.letech.study.board.vo.PostsVO;
 import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.sec.annotation.CurrentUser;
 import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
-import kr.letech.study.cmmn.utils.PercentDecoder;
 import kr.letech.study.cmmn.vo.SearchVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,19 +74,24 @@ public class BoardController {
 	public String postList(Model model
 			, @PathVariable("boardCate") String boardCd
 			, @RequestParam(name="key", required=false, defaultValue="0") Integer keyword
-			, @RequestParam(name="term", required=false, defaultValue="default") String term) {
+			, @RequestParam(name="term", required=false, defaultValue="default") String term
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/list (BoardController) 연결.");
 	
+		String username = loginUser.getUsername();
+		
 		/** 검색 파라미터 검증 */
-		SearchVO search= PercentDecoder.searchParamValidate(keyword, term);
+//		SearchVO search = PercentDecoder.searchParamValidate(keyword, term);
+		SearchVO search = new SearchVO(keyword, term);
 		
 		/** 게시글 목록 조회 서비스 실행 */
 		List<PostsVO> postList = boardService.readPostList(model, search);
-
+		
 		//첨부파일 수도 세보자.
 
 		/** 모델&뷰레이어 반환 */
 		model.addAttribute("postList", postList);
+		model.addAttribute("username", username);
 		return "board/postList.tiles";
 	}
 	 
@@ -96,11 +100,11 @@ public class BoardController {
 	public String postDetail(Model model
 			, @PathVariable("boardCate") String boardCd
 			, @RequestParam(name="postId") String postId
-			, @CurrentUser UserDetailsVO user) {
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post (BoardController) 연결.");
 		
 	    /** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 게시글 상세 조회 서비스 실행 */
 		boardService.readPostDetail(model, postId, username);
@@ -123,12 +127,12 @@ public class BoardController {
 	@GetMapping("/{boardCate}/post/update")
 	public String postUpdate(Model model
 			, @RequestParam("postId") String postId
-			, @CurrentUser UserDetailsVO user
+			, @CurrentUser UserDetailsVO loginUser
 			) {
 		log.debug("▩▩▩ URL: GET/board/{boardCate}/post/update (BoardController) 연결.");
 		
 	    /** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 게시글 수정 데이터 조회 서비스 실행 */
 		boardService.readPostDetail(model, postId, username);
@@ -144,13 +148,13 @@ public class BoardController {
 			, @ModelAttribute PostsVO post
 			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
 			, @RequestParam(name="lastModified", required=false) List<Long> lastModifiedList
-			, @CurrentUser UserDetailsVO user
+			, @CurrentUser UserDetailsVO loginUser
 			) {
 		log.debug("▩▩▩ URL: POST/board/post/insert (BoardController) 연결.");
 	    log.debug("첨부파일 개수: {}", attachFiles != null ? attachFiles.length : 0);
 		
 	    /** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 게시글 등록 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
@@ -168,11 +172,11 @@ public class BoardController {
 			, @RequestParam(name="attachFiles", required=false) MultipartFile[] attachFiles
 			, @RequestParam(name="deleteFileSeq", required=false) List<String> deleteFileSeqList
 			, @RequestParam(name="lastModified", required=false) List<Long> lastModifiedList
-			, @CurrentUser UserDetailsVO user) {
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: POST/board/post/update (BoardController) 연결.");
 		log.debug("▩ ----- 0923_테스트: fileGrpId : {}", post.getAttachGrpId());
 		/** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 게시글 수정 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
@@ -187,14 +191,14 @@ public class BoardController {
 	@GetMapping("/post/delete")
 	public String postDelete(
 			@RequestParam("postId") String postId
-			, @CurrentUser UserDetailsVO user
+			, @CurrentUser UserDetailsVO loginUser
 			) {
 		log.debug("▩▩▩ URL: POST/board/post/delete (BoardController) 연결.");
 		
 		
 		/** 로그인 정보 & 게시판 카테고리 조회 */
 		String boardCate = BOARD_CATE;
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 게시글 삭제 서비스 실행 */
 		boardService.removePost(username, postId);
@@ -221,12 +225,12 @@ public class BoardController {
 	@GetMapping(value="/comment/select", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentSelect(
 			@RequestParam("postId") String postId
-			, @CurrentUser UserDetailsVO user
+			, @CurrentUser UserDetailsVO loginUser
 			) {
 		log.debug("▩▩▩ URL: GET/board/comment/select (BoardController) 연결.");
 		
 		/** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 덧글 조회 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
@@ -240,12 +244,12 @@ public class BoardController {
 	@PostMapping(value="/comment/insert", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentInsert(
 			@RequestBody CommentsVO comment
-			, @CurrentUser UserDetailsVO user
+			, @CurrentUser UserDetailsVO loginUser
 			) {
 		log.debug("▩▩▩ URL: POST/board/comment/insert (BoardController) 연결.");
 
 		/** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 덧글 등록 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
@@ -259,11 +263,11 @@ public class BoardController {
 	@PostMapping(value="/comment/update", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentUpdate(
 			@RequestBody CommentsVO comment
-			, @CurrentUser UserDetailsVO user) {
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: POST/board/comment/update (BoardController) 연결.");
 
 		/** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		/** 덧글 수정 서비스 실행 */
 		Map<String, Object> body = new HashMap<>();
@@ -277,11 +281,11 @@ public class BoardController {
 	@PostMapping(value="/comment/delete", produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
 	public ResponseEntity<Map<String, Object>> commentDelete(
 			@RequestBody Map<String, String> payload
-			, @CurrentUser UserDetailsVO user) {
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: POST/board/comment/delete (BoardController) 연결.");
 		
 		/** 로그인 정보 조회 */
-		String username = user.getUsername();
+		String username = loginUser.getUsername();
 		
 		//---
 		String cmtId = payload.get("cmtId");

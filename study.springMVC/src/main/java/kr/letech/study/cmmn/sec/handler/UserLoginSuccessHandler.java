@@ -91,6 +91,11 @@ public class UserLoginSuccessHandler implements AuthenticationSuccessHandler {
 			uri = prevPage;
 		}
 		
+		// 0924_로그인팝업창 구현
+		log.debug("▣▣▣▣▣▣▣▣▣▣▣▣▣▣▣▣▣▣최종 리다이렉트 url:: {}", uri);
+		request.getSession(true).setAttribute("redirectAfterLogin", prevPage);
+		log.debug("{}", request.getSession().getAttribute("redirectAfterLogin"));
+		
 		//세 가지 케이스에 따른 URI 주소로 리다이렉트
 		response.sendRedirect(uri);	
 	}

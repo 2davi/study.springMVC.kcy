@@ -6,24 +6,44 @@
 <tiles-definitions>
 	<!-- main layout -->
 	<definition name="layout-tiles" template="/WEB-INF/views/tiles/tiles-layout.jsp">
-		<put-attribute name="header" value="/WEB-INF/views/tiles/headerTemplate.jsp" />
-		<put-attribute name="left" value="/WEB-INF/views/tiles/sidebarTemplate.jsp" />
-		<put-attribute name="body" value="" />
-		<put-attribute name="foot" value="/WEB-INF/views/tiles/footerTemplate.jsp" />
+		<put-attribute name="app-header" value="/WEB-INF/views/tiles/headerTemplate.jsp" />
+		<put-attribute name="app-left" value="/WEB-INF/views/tiles/sidebarTemplate.jsp" />
+		<put-attribute name="app-body" value="" />
+		<put-attribute name="app-foot" value="/WEB-INF/views/tiles/footerTemplate.jsp" />
 	</definition>
 	
 	<definition name="*.tiles" extends="layout-tiles">
-		<put-attribute name="body" value="/WEB-INF/views/{1}.jsp" />
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}.jsp" />
 		<put-attribute name="title" value="게시판" />
 	</definition>
 	
 	<definition name="*/*.tiles" extends="layout-tiles">
-		<put-attribute name="body" value="/WEB-INF/views/{1}/{2}.jsp" />
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}/{2}.jsp" />
 		<put-attribute name="title" value="게시판" />
 	</definition>
 	
 	<definition name="*/*/*.tiles" extends="layout-tiles">
-		<put-attribute name="body" value="/WEB-INF/views/{1}/{2}/{3}.jsp" />
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}/{2}/{3}.jsp" />
+		<put-attribute name="title" value="게시판" />
+	</definition>
+	
+	<!-- 0924_로그인 팝업처리 -->
+	<definition name="layout-popups" template="/WEB-INF/views/tiles/popups-layout.jsp">
+		<put-attribute name="app-body" value="" />
+	</definition>
+	
+	<definition name="*.popups" extends="layout-popups">
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}.jsp" />
+		<put-attribute name="title" value="게시판" />
+	</definition>
+	
+	<definition name="*/*.popups" extends="layout-popups">
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}/{2}.jsp" />
+		<put-attribute name="title" value="게시판" />
+	</definition>
+	
+	<definition name="*/*/*.popups" extends="layout-popups">
+		<put-attribute name="app-body" value="/WEB-INF/views/{1}/{2}/{3}.jsp" />
 		<put-attribute name="title" value="게시판" />
 	</definition>
 </tiles-definitions>

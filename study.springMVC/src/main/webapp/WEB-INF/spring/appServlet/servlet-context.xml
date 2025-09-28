@@ -26,6 +26,9 @@
 	<resources mapping="/resources/**" location="/resources/" />
 	<!-- 이미지 불러와서 웹페이지에 띄우기 :: 앞에 file:/// 붙여야 함-->
 	<resources mapping="/user-profile/**" location="file:///D:/java/eclipse/eGovFrameDev-4.0.0-64bit/eclipse/study.SpringMVC/user/" />
+	<!-- 
+	<resources mapping="/login-banner/**" location="file:///D:/java/eclipse/eGovFrameDev-4.0.0-64bit/eclipse/study.SpringMVC/user/" />
+	 -->
 
 	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
 	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">

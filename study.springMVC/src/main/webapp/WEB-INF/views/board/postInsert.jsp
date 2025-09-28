@@ -9,67 +9,82 @@
 <sec:csrfMetaTags/>
 </head>
 <body>
-<h3>postInsert.jsp</h3>
-<div class="wrapper">
-	<div>
-		<h2>자유게시글 작성 </h2>
-	</div>
-	<div><!-- 검색박스 공간만큼 비워둘 2행 --></div>
-	<div><!-- 게시글 작성 폼이 위치할 3행 -->
-		<div><!-- 글 등록버튼(상단) 만큼 비워둘 공간 --></div>
-		<div><!-- 게시글 목록 -->
-			<form id="postForm" method="POST" action="/board/post/insert" enctype="multipart/form-data">
-				<sec:csrfInput/>
-				<div class="form-attr">
-					<label for="boardCd">게시판 선택: 
-						<select id="boardCd" name="boardCd" required>
-							<option value="AB010" selected>자유</option>
-							<option value="AB020">유머</option>
-						</select>
-					</label>
-					<label>
-						<input type="checkbox" name="hiddenYn" value="Y" style="width=200;" />
-						비공개
-					</label>
-					<label>
-						<input type="checkbox" name="cmtYn" value="Y" style="width=200;" checked/>
-						댓글허용
-					</label>
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="postTitle">제목: </label>
-					</div>
-					<input type="text" id="postTitle" name="postTitle" value="" />
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="postContent">내용: </label>
-					</div>
-					<textarea id="postContent" name="postContent"></textarea>
-				</div>
-				<div class="form-attr">
-					<div class="form-label">
-						<label for="attachFiles">첨부파일: </label>
-					</div>
-					<div>
-						<input type="button" id="fakeAttachFiles" value="파일추가_" onclick="fn_activateAttachFiles()" />
-						<input type="file" id="tempAttachFiles" onchange="fn_addAttachFiles(this)" multiple hidden /> 
-						<!-- <input type="file" id="attachFiles" name="attachFiles" multiple /> -->
-						<div class="div-attach-file-list" id="divAttachFilesList">
-							<ul class="ul-attach-file-list" id="ulAttachFilesList">
-							</ul>
+<h3 class="mb-3">자유게시글 작성</h3>
+
+<div class="post-writer card shadow-sm">
+	<div class="card-body">
+		<div><!-- 검색박스 공간만큼 비워둘 2행 --></div>
+		<div><!-- 게시글 작성 폼이 위치할 3행 -->
+			<div><!-- 글 등록버튼(상단) 만큼 비워둘 공간 --></div>
+			<div><!-- 게시글 목록 -->
+				<form id="postForm" method="POST" action="/board/post/insert" enctype="multipart/form-data">
+					<sec:csrfInput/>
+					<div class="mb-3 d-flex flex-row gap-3 align-items-center">
+						<div class="form-attr gap-4" style="padding-left:45px">
+							<div class="d-flex flex-column gap-1">
+								<label for="boardCd" class="form-label text-subtitle">게시판 선택: 
+									<select id="boardCd" name="boardCd" class="form-select form-select-sm" required>
+										<option value="AB010" selected>자유</option>
+										<option value="AB020">유머</option>
+									</select>
+								</label>
+							</div>
+							<div class="d-flex flex-column gap-1">
+								<label class="form-label" style="padding-left: 1.8em;margin-bottom:0;">글 설정:</label>
+								<div class="d-flex flex-row">
+									<div class="form-check d-flex flex-column ">
+										<label>
+											<input type="checkbox" name="hiddenYn" value="Y" style="width=200;" />
+											비공개
+										</label>
+									</div>
+									<div class="form-check d-flex flex-column ">
+										<label>
+											<input type="checkbox" name="cmtYn" value="Y" style="width=200;" checked/>
+											댓글허용
+										</label>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
-				</div>
-			
+					<div class="form-attr mb-3 gap-4">
+						<div class="">
+							<label for="postTitle" class="form-label text-end" style="width:80px;">제목: </label>
+						</div>
+						<input type="text" id="postTitle" name="postTitle" class="form-control" value="" />
+					</div>
+					<div class="form-attr mb-3 gap-4">
+						<div class="">
+							<label for="postContent" class="form-label text-end" style="width:80px;">내용: </label>
+						</div>
+						<textarea id="postContent" name="postContent" class="form-control" rows="10" ></textarea>
+					</div>
+					<div class="form-attr mb-3 gap-4">
+						<div class="">
+							<label for="attachFiles" class="form-label text-end" style="width:80px;">첨부파일: </label>
+						</div>
+						<div class="d-flex flex-column gap-1 w-100">
+							<div>
+								<input type="button" id="fakeAttachFiles" value="파일추가" class="btn btn-outline-warning btn-sm" onclick="fn_activateAttachFiles()" />
+								<input type="file" id="tempAttachFiles" onchange="fn_addAttachFiles(this)" multiple hidden /> 
+								<!-- <input type="file" id="attachFiles" name="attachFiles" multiple /> -->
+							</div>
+							<div class="div-attach-file-list border rounded p-2 w-100" id="divAttachFilesList" style="min-height:40px;">
+								<ul class="ul-attach-file-list mb-0" id="ulAttachFilesList">
+								</ul>
+							</div>
+						</div>
+					</div>
+				
+			</div>
+			<div class="text-right"><!-- 글 등록버튼 -->
+				<input type="button" value="등록" class="btn btn-sm btn-outline-secondary"  onclick="fn_submitPost()" />
+				<input type="button" value="초기화" class="btn btn-sm btn-outline-primary" onclick="fn_resetPost()"/>
+			</div>
+				</form>
+			<div><!-- 페이지네이션 만큼 비워둘 공간 --></div>
 		</div>
-		<div><!-- 글 등록버튼 -->
-			<input type="button" value="등록" onclick="fn_submitPost()" />
-			<input type="button" value="초기화" onclick="fn_resetPost()"/>
-		</div>
-			</form>
-		<div><!-- 페이지네이션 만큼 비워둘 공간 --></div>
 	</div>
 </div>
 
@@ -108,14 +123,18 @@ function renderList() {
 	console.debug("attachFiles:: ", attachFiles);
 	attachList.innerHTML = ''; //초기화.
 	if(attachFiles.length === 0) {
-		attachList.innerHTML = "<li>선택된 파일이 없습니다.</li>";
+		attachList.innerHTML = "<li class='text-muted'>선택된 파일이 없습니다.</li>";
 		return;
 	}
 	attachFiles.forEach((f, idx) => {
 		const li = document.createElement('li');
+		// 0925_BootStrap
+	    li.classList.add("d-flex","justify-content-between","align-items-center");
 		const delBtn = document.createElement('input');
-		li.textContent = f.name + ' ';
+		li.innerHTML = '<span class="card-subtitle"><i class="ti ti-menu-2 fs-5"></i>&nbsp;' + f.name + ' (' + f.size + 'Bytes) </span>';
 		delBtn.type = "button";
+		// 0925_BootStrap
+	    delBtn.className = "btn btn-sm btn-outline-danger";
 		delBtn.value= "삭제";
 		delBtn.onclick = () => {
 			attachFiles.splice(idx, 1);

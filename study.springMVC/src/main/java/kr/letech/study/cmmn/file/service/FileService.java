@@ -41,4 +41,5 @@ public interface FileService {
 	/** 간단 기능 */
 	public String readUserProfileImgSrc(String profileGrpId);
 	public List<Map<String, Object>> readAttachFileCount(List<String> attachGrpIdList);
+	
 }
