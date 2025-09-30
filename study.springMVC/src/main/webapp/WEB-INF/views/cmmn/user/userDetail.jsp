@@ -44,8 +44,8 @@
 			<td>
 				<c:set var="first" value="true" />
 				<c:forEach items="${cmmnCodeList }" var="cmmnCode">
-					<c:forEach items="${userRoles }" var="userRole">
-						<c:if test="${cmmnCode.cmmnCd eq userRole }">
+					<c:forEach items="${userRoles }" var="role">
+						<c:if test="${cmmnCode.cmmnCd eq role.userRole }">
 							<c:if test="${not first }">/&nbsp;</c:if>
 							<strong>${cmmnCode.cmmnNm }</strong>
 							<c:set var="first" value="false" />
@@ -98,6 +98,8 @@ $(document).ready(function() {
 		console.debug($slot);
 	});
 	
+	const s = "${userRoles}";
+	console.debug(s);
 });
 </script>
 

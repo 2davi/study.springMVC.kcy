@@ -42,6 +42,8 @@
 		 빈 이름은 무조건  multipartResolver -->
 	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver">
 	</beans:bean>
+
+	
 	
 	<context:property-placeholder location="classpath:application.properties, classpath:application-${spring.profiles.active}.properties"/>
 

@@ -11,4 +11,16 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
 	
+	<!-- 0929_REST API 호출을 위한 Bean 등록 -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+	</bean>
+	<bean id="userApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.UserApiClient">
+		<property name="restTemplate" ref="restTemplate" />
+	</bean>
+	<bean id="commonCodeApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.CommonCodeApiClient">
+		<property name="restTemplate" ref="restTemplate" />
+	</bean>
+	<bean id="userRoleApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.UserRoleApiClient">
+		<property name="restTemplate" ref="restTemplate" />
+	</bean>
 </beans>

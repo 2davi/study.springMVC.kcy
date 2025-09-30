@@ -7,15 +7,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import kr.letech.study.cmmn.code.service.CommonCodeService;
+import kr.letech.study.cmmn.code.vo.CommonCodeVO;
 import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.file.vo.FilesVO;
-import kr.letech.study.cmmn.vo.SearchVO;
+import kr.letech.study.cmmn.restTemplate.apiClient.CommonCodeApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserRoleApiClient;
+import kr.letech.study.cmmn.restTemplate.envelope.Envelope;
+import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
+import kr.letech.study.cmmn.utils.PercentDecoder;
+import kr.letech.study.cmmn.vo.UserRoleVO;
 import kr.letech.study.user.dao.UserDAO;
 import kr.letech.study.user.service.UserService;
 import kr.letech.study.user.vo.UserVO;
@@ -35,53 +44,79 @@ import lombok.extern.slf4j.Slf4j;
  *  2025-09-12		KCY				최초 생성
  *  2025-09-15		KCY				검색 서비스 추가
  *  2025-09-16		KCY				권한 조회 서비스 추가
+ *  2025-09-29		KCY				REST API 전환 작업
  */
 @Service @Slf4j @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
-	
 	private final UserDAO userDAO;
-
-	private final FileService fileService;
-
+	private final FileService fileService;	
 	private final BCryptPasswordEncoder passwordEncoder;
-	
+	@Qualifier("userApiClient")
+	private final UserApiClient userApi;
+	private final CommonCodeService commonCodeService;
+	private final CommonCodeApiClient cmmnCodeApi;
+	private final UserRoleApiClient userRoleApi;
 	
 	@Override
-	public UserVO readUserDetail(String userId) {
-		log.debug("▩▩▩ UserService .readUserDetail() 호출.");
+	public void readUserList(Model model, UserDetailsVO loginUser, Integer keyword, String term) {
+		log.debug("▩▩▩ UserService .readUserList() 호출.");
 		
-		return userDAO.selectUserDetail(userId);
-	}
-
-	@Override
-	@Transactional
-	public void createUser(UserVO user, List<String> userRoles) {
-		log.debug("▩▩▩ UserService .createUser() 호출.");
+		/** 검색 파라미터 검증 */
+		log.debug("▩ SEARCH-BOX: KEYWORD = \"{}\", TERM = \"{}\"", keyword, term);
+		if(keyword != 0 && keyword != 1 && keyword != 2) {
+			keyword = 0;
+			term = "default";
+		} else term = PercentDecoder.decodeURLSafe(term);
 		
-		// 1.사용자정보 USER 등록
-		log.info("▩ USER insert 시작함");
-		userDAO.insertUser(user);
-		
-		// 2.사용자권한정보 USER_ROLE 등록
-		log.info("▩ USER_ROLE insert 시작함");
-//		for(String role: userRoles) {
-//			UserRoleVO userRole = new UserRoleVO(role, user.getUserId());
-//			userDAO.mergeUserRole_OLD(userRole);
-//			log.info("▩ USER_ROLE 반복횟수 1회 완료");
-//		}
-		Map<String, Object> forEachParams = new HashMap<>();
-		forEachParams.put("userId", user.getUserId());
-		forEachParams.put("rgstId", user.getRgstId());
-		forEachParams.put("updtId", user.getUpdtId());
-		forEachParams.put("userRoles", userRoles);
-		userDAO.mergeUserRole(forEachParams);
-
+		Envelope<List<UserVO>> response =  userApi.readUserList(keyword, term);
+		model.addAttribute("username", loginUser.getUsername());
+		model.addAttribute("userList", response.getData());
+		return;
 	}
 	
 	@Override @Transactional
-	public String createUser(Model model, UserVO user, List<String> userRoles, MultipartFile multipart) {
-		log.debug("▩▩▩ UserService .createUser2() 호출.");
+	public UserVO readUserDetail(Model model, UserDetailsVO loginUser, String userId) {
+		log.debug("▩▩▩ UserService .readUserDetail() 호출.");
+
+		//0912_사용자정보 불러오기
+//		UserVO user = userDAO.selectUserDetail(userId);
+		UserVO user = userApi.readUserDetail(userId).getData();
 		
+		//0915_사용자권한 불러오기
+//		List<String> userRoles = userDAO.selectUserRoles(userId);
+		List<UserRoleVO> userRoles = userRoleApi.readRolesOfUser(userId).getData();
+		
+		//0915_공통코드 불러오기
+//		List<String> cmmnCodeParams = List.of("AA");
+//		List<CommonCodeVO> cmmnCodeList = commonCodeService.readCommonCodeList(cmmnCodeParams);
+		
+		String cmmnGrpCd = "AA";
+		List<CommonCodeVO> cmmnCodeList = cmmnCodeApi.readCmmnCdList(cmmnGrpCd).getData();
+		
+		//0918_등록된프로필사진 불러오기
+		String userProfileImgSrc = fileService.readUserProfileImgSrc(user.getProfileGrpId());
+		
+		//0922_로그인한 회원 아이디 불러오기
+		String username = loginUser.getUsername();
+		
+		log.debug("▩ ----- MODEL 세팅작업 전 값들 확인");
+		log.debug("▩ ----- userRoles : {}", userRoles);
+		log.debug("▩ ----- cmmnCodeList : {}", cmmnCodeList);
+		
+		model.addAttribute("user", user);
+		model.addAttribute("userRoles", userRoles);
+		model.addAttribute("cmmnCodeList", cmmnCodeList);
+		model.addAttribute("userProfileImgSrc", userProfileImgSrc);
+		model.addAttribute("username", loginUser.getUsername());
+		
+		return user; //<--GET userDetail, POST updateUser
+	}
+	
+	@Override @Transactional
+	public String createUser(Model model, UserDetailsVO loginUser, UserVO user, List<String> userRoles, MultipartFile multipart) {
+		log.debug("▩▩▩ UserService .createUser() 호출.");
+		
+		/** 프로필 첨부기능. */
 		// 0918_프로필사진 첨부기능.
 		FilesVO filesVO = fileService.createFile(multipart, "AF010", user.getUserId());
 		
@@ -90,44 +125,33 @@ public class UserServiceImpl implements UserService{
 			model.addAttribute("Msg", "첨부파일 처리 중 오류가 발생했습니다.");
 			return "redirect:/cmmn/user/insert";
 		}
+		
 		//user 프로필사진 컬럼에 uuid 저장
 		user.setProfileGrpId(profileGrpId);
 		
 		//Security: 암호화된 비밀번호 저장
 		user.setUserPw(passwordEncoder.encode(user.getUserPw()));
 		
-		// 사용자 등록기능.
-		createUser(user, userRoles);
+		/** 사용자 등록기능. */
+		// 1.사용자정보 USER 등록
+		log.info("▩ USER insert 시작함");
+		user = userApi.createUser(user).getData();
+		
+		// 2.사용자권한정보 USER_ROLE 등록
+		log.info("▩ USER_ROLE insert 시작함");
+		userRoleApi.mergeUserRoles(user.getUserId(), userRoles, null);
+
 		return "redirect:/";
 	}
 
-
 	@Override
 	@Transactional
-	public void modifyUser(UserVO user, List<String> userRoles) {
+	public String modifyUser(Model model, UserDetailsVO loginUser, UserVO user, List<String> userRoles, MultipartFile multipart) {
 		log.debug("▩▩▩ UserService .modifyUser() 호출.");
 		
-		userDAO.updateUser(user);
 		
-		Map<String, Object> forEachParams = new HashMap<>();
-		forEachParams.put("userId", user.getUserId());
-		forEachParams.put("rgstId", user.getRgstId());
-		forEachParams.put("updtId", user.getUpdtId());
-		forEachParams.put("userRoles", userRoles);
-		userDAO.mergeUserRole(forEachParams);
-		userDAO.deleteUserRole(forEachParams);
-		/*
-		 * Query 안에서 IN() 절이나 foreach 문법을 쓸 일이 없다.
-		 * delete-insert는 보통 물리삭제의 경우에 
-		 */
-	}
-
-	@Override @Transactional
-	public String modifyUser(Model model, UserVO user, List<String> userRoles, MultipartFile multipart) {
-		log.debug("▩▩▩ UserService .modifyUser2() 호출.");
-		
+		/** 프로필 첨부기능. */
 		String userId = user.getUserId();
-		
 		if(!multipart.isEmpty()) {
 			log.debug("▩ ----- multipart가 존재한다.");
 			
@@ -145,12 +169,31 @@ public class UserServiceImpl implements UserService{
 			user.setProfileGrpId(profileGrpId);
 		}
 		
+		
+		/** 사용자 등록기능. */
 		//Security: 암호화된 비밀번호 저장
 		user.setUserPw(passwordEncoder.encode(user.getUserPw()));
 		
-		modifyUser(user, userRoles);
+//		userDAO.updateUser(user);
+//		
+//		Map<String, Object> forEachParams = new HashMap<>();
+//		forEachParams.put("userId", user.getUserId());
+//		forEachParams.put("rgstId", user.getRgstId());
+//		forEachParams.put("updtId", user.getUpdtId());
+//		forEachParams.put("userRoles", userRoles);
+//		userDAO.mergeUserRole(forEachParams);
+//		userDAO.deleteUserRole(forEachParams);
+		userRoleApi.mergeUserRoles(userId, userRoles, userId);
+		
+		/*
+		 * Query 안에서 IN() 절이나 foreach 문법을 쓸 일이 없다.
+		 * delete-insert는 보통 물리삭제의 경우에 
+		 */
+		
+		model.addAttribute("username", loginUser.getUsername());
 		return "redirect:/cmmn/user/detail?userId=" + userId;
 	}
+
 	
 	@Override @Transactional
 	public void removeUser(String userId) {
@@ -183,21 +226,8 @@ public class UserServiceImpl implements UserService{
 		
 		return "redirect:/cmmn/user/update?userId=" + userId;
 	}
-	
-//	@Override
-//	public List<UserVO> readUserListBySearch(String search) {
-//		log.debug("▩▩▩ UserService .readUserListBySearch() 호출.");
-//		
-//		return userDAO.selectUserListBySearch(search);
-//	}
-//	
-	@Override
-	public List<UserVO> readUserList(SearchVO search) {
-		log.debug("▩▩▩ UserService .readUserList() 호출.");
-		
-		log.debug("▩ ----- 문제 원인 찾기 : term - {}", search.getTerm());
-		return userDAO.selectUserList(search);
-	}
+
+
 
 	@Override
 	public List<String> readUserRoles(String userId) {
