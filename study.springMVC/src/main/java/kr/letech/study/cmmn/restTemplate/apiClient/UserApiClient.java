@@ -94,4 +94,43 @@ public class UserApiClient {
 		
 		return response.getBody();
 	}
+	
+	public Envelope<UserVO> modifyUser(String userId, UserVO user, String username) {
+		log.debug("▩▩▩ REST-API UserApiClient.modifyUser() 호출.");
+		
+		Map<String, Object> pathVars = Map.of("userId", userId);
+		Map<String, Object> queryParams = Map.of("username", username);
+		String url = URIUtils.makeURIWithPathAndQuery(BASE_URL, "/users", pathVars, queryParams);
+		
+		HttpEntity<UserVO> requestEntity = new HttpEntity<>(user);
+		ResponseEntity<Envelope<UserVO>> response = 
+				restTemplate.exchange(
+						url
+						, HttpMethod.POST
+						, requestEntity
+						, new ParameterizedTypeReference<Envelope<UserVO>>() {}
+		);
+		
+		return response.getBody();
+	}
+	
+	public Envelope<UserVO> removeUser(String userId, String username) {
+		log.debug("▩▩▩ REST-API UserApiClient.removeUser() 호출.");
+		
+		Map<String, Object> pathVars = Map.of("userId", userId);
+		Map<String, Object> queryParams = Map.of("username", username);
+		String url = URIUtils.makeURI(BASE_URL, "/users/{userId}?username={username}");
+		
+		ResponseEntity<Envelope<UserVO>> response = 
+				restTemplate.exchange(
+						url
+						, HttpMethod.DELETE
+						, null
+						, new ParameterizedTypeReference<Envelope<UserVO>>() {}
+						, userId
+						, username
+		);
+		
+		return response.getBody();
+	}
 }

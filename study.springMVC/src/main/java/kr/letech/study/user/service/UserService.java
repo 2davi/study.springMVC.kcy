@@ -32,10 +32,8 @@ public interface UserService {
 	public UserVO readUserDetail(Model model, UserDetailsVO loginUser, String userId);
 	public String createUser(Model model, UserDetailsVO loginUser, UserVO user, List<String> userRoles, MultipartFile multipart);
 	public String modifyUser(Model model, UserDetailsVO loginUser, UserVO user, List<String> userRoles, MultipartFile multipart);
+	public void removeUser(String userId, UserDetailsVO loginUser);
 	
-	
-
-	public void removeUser(String userId);
 	public String removeProfileImg(String userId);
 	
 	

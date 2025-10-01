@@ -144,10 +144,11 @@ public class UserController {
 	
 	@GetMapping("/delete")
 	public String userDelete(Model model
-			, @RequestParam("userId") String userId) {
+			, @RequestParam("userId") String userId
+			, @CurrentUser UserDetailsVO loginUser) {
 		log.debug("▩▩▩ URL: GET/cmmn/user/delete (UserController) 연결.");
 
-		userService.removeUser(userId);
+		userService.removeUser(userId, loginUser);
 		
 		return "redirect:/cmmn/user/list";
 	}

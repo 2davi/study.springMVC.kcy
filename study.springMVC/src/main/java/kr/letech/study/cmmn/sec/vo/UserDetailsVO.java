@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import kr.letech.study.cmmn.vo.UserRoleVO;
 import kr.letech.study.user.vo.UserVO;
 
 /**
@@ -100,6 +101,18 @@ public class UserDetailsVO implements UserDetails {
 			
 		for (int i=0; i< authList.size(); i++) {
 			authorities.add(new SimpleGrantedAuthority(authList.get(i)));
+		}
+		
+		this.authorities = authorities;
+	}
+	
+	//0930_야매
+	public void setAuthoritiesForVO(List<UserRoleVO> authList) {
+		
+		List<GrantedAuthority> authorities = new ArrayList<>();
+			
+		for (int i=0; i< authList.size(); i++) {
+			authorities.add(new SimpleGrantedAuthority(authList.get(i).getUserRole()));
 		}
 		
 		this.authorities = authorities;

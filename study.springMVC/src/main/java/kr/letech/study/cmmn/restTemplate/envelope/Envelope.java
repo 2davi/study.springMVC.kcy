@@ -16,7 +16,10 @@ import java.util.Map;
  *		data: 실제 비즈니스 데이터(payload)
  *		links: 잘 모르겠음.
  *		meta: 페이징/정렬/서버버전 등의 메타데이터
- *	https://docs.oracle.com/en/java/javase/17/language/records.html?utm_source=chatgpt.com
+ *	https://docs.oracle.com/en/java/javase/17/language/records.html
+ *	https://dao-blog.tistory.com/m/51
+ *	https://velog.io/@youngho0620/Spring-6%EC%9D%98-%EC%83%88%EB%A1%9C%EC%9A%B4-%EC%97%90%EB%9F%AC-%EC%9D%91%EB%8B%B5-%ED%91%9C%EC%A4%80-ProblemDetail
+ *	https://velog.io/@hongxipyo/Spring-Boot-Rest-Template-%EC%9D%B4%EB%9E%80-nebttejt
  * </pre>
  * 
  * < 개정이력 >

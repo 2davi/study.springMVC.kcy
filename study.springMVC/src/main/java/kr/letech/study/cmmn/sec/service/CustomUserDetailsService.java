@@ -8,6 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import kr.letech.study.cmmn.restTemplate.apiClient.SecurityApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserRoleApiClient;
 import kr.letech.study.cmmn.sec.dao.CustomUserDetailsDAO;
 import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
 import kr.letech.study.user.vo.UserVO;
@@ -30,6 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private final CustomUserDetailsDAO userDetailsDAO;
+	private final UserApiClient userApi;
+	private final UserRoleApiClient userRoleApi;
+	private final SecurityApiClient securityApi;
 
 	@Override
 	public UserDetails loadUserByUsername(String inputUserId) throws UsernameNotFoundException {
@@ -38,7 +44,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 		UserDetailsVO userDetails = new UserDetailsVO();
 		
 		//사용자정보 select
-		UserVO userVO = this.userDetailsDAO.selectUser(inputUserId);
+//		UserVO userVO = this.userDetailsDAO.selectUser(inputUserId);
+		//0930_야매
+		UserVO userVO = userApi.readUserDetail(inputUserId).getData();
 		
 		//사용ㅈ정보 없으면 null
 		if(userVO == null) {
@@ -54,7 +62,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 			userDetails.getUserVO().setUserPw(null);
 			log.debug("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩ USER_DETAILS : {} - {}", userDetails.getUsername(), userDetails.getPassword());
 			//사용자권한 select해서 받아온 List<String> 주입
-			userDetails.setAuthorities(this.userDetailsDAO.selectUserAuthList(inputUserId));
+//			userDetails.setAuthorities(this.userDetailsDAO.selectUserAuthList(inputUserId));
+			
+			//0930_야매
+			userDetails.setAuthoritiesForVO(userRoleApi.readRolesOfUser(inputUserId).getData());
 			
 		}
 		return userDetails;

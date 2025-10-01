@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import kr.letech.study.cmmn.file.dao.FilesDAO;
 import kr.letech.study.cmmn.file.service.FileService;
 import kr.letech.study.cmmn.file.vo.FilesVO;
+import kr.letech.study.cmmn.restTemplate.apiClient.FilesApiClient;
 import kr.letech.study.cmmn.utils.FileStorageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileServiceImpl implements FileService {
 	
 	private final FilesDAO fileDAO;
+	private final FilesApiClient fileApi;
 
 	
 	@Override
@@ -191,7 +193,10 @@ public class FileServiceImpl implements FileService {
 		
 		log.debug("▩ ----- 값 채워놨는지 확인: PROFILE_GRP_ID : {}", profileGrpId);
 		
-		String fileRefNm = fileDAO.selectFileRefNm(profileGrpId);
+		//1001_FILE_API 전환
+		//String fileRefNm = fileDAO.selectFileRefNm(profileGrpId);
+		List<String> fileRefNmList = fileApi.readFileRefNmList(profileGrpId).getData();
+		String fileRefNm = fileRefNmList.get(0);
 		
 		
 		// servlet-context.xml에 적용한 mvc:resource 태그

@@ -159,4 +159,40 @@ public class UserVO extends BaseVO implements Serializable{
 		return "UserVO [userId=" + userId + ", userPw=" + userPw + ", userNm=" + userNm + ", regno1=" + regno1
 				+ ", regno2=" + regno2 + ", profileGrpId=" +profileGrpId+ "]";
 	}
+	
+    public void mergeFrom(UserVO oldUser) {
+        // ---- UserVO 전용 필드 ----
+        if (this.userPw == null || this.userPw.isBlank()) {
+            this.userPw = oldUser.getUserPw();
+        }
+        if (this.userNm == null || this.userNm.isBlank()) {
+            this.userNm = oldUser.getUserNm();
+        }
+        if (this.regno1 == null) {
+            this.regno1 = oldUser.getRegno1();
+        }
+        if (this.regno2 == null) {
+            this.regno2 = oldUser.getRegno2();
+        }
+        if (this.profileGrpId == null || this.profileGrpId.isBlank()) {
+            this.profileGrpId = oldUser.getProfileGrpId();
+        }
+
+        // ---- BaseVO 상속 필드 ----
+        if (this.getRgstId() == null || this.getRgstId().isBlank()) {
+            this.setRgstId(oldUser.getRgstId());
+        }
+        if (this.getRgstDt() == null) {
+            this.setRgstDt(oldUser.getRgstDt());
+        }
+        if (this.getUpdtId() == null || this.getUpdtId().isBlank()) {
+            this.setUpdtId(oldUser.getUpdtId());
+        }
+        if (this.getUpdtDt() == null) {
+            this.setUpdtDt(oldUser.getUpdtDt());
+        }
+        if (this.getDelYn() == null || this.getDelYn().isBlank()) {
+            this.setDelYn(oldUser.getDelYn());
+        }
+    }
 }

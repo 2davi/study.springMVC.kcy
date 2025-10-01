@@ -86,4 +86,32 @@ public class URIUtils {
 		return b.buildAndExpand(pvParams).encode().toUriString();
 	}
 
+	//0930_경로변수, 쿼리스트링 하나씩 쓰는 URI
+	public static String makeURIWithPathAndQuery(
+			String baseUrl,
+			String handlerMappingUrl,
+			Map<String, ?> pathVars,
+			Map<String, ?> queryParams) {
+		
+		// 1. PathVariable 치환
+		UriComponentsBuilder builder = UriComponentsBuilder
+				.fromHttpUrl(baseUrl)
+				.path(handlerMappingUrl);
+		
+		String uriString;
+		if (pathVars != null && !pathVars.isEmpty()) {
+			uriString = builder.buildAndExpand(pathVars).toUriString();
+		} else {
+			uriString = builder.build().encode().toUriString();
+		}
+		
+		// 2. QueryString 추가
+		UriComponentsBuilder withQuery = UriComponentsBuilder.fromUriString(uriString);
+		
+		if (queryParams != null && !queryParams.isEmpty()) {
+			queryParams.forEach((k, v) -> withQuery.queryParam(k, v));
+		}
+		
+		return withQuery.encode().toUriString();
+	}
 }

@@ -23,4 +23,11 @@
 	<bean id="userRoleApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.UserRoleApiClient">
 		<property name="restTemplate" ref="restTemplate" />
 	</bean>
+	<bean id="securityApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.SecurityApiClient">
+		<property name="restTemplate" ref="restTemplate" />
+	</bean>
+	<bean id="filesApiClient" class="kr.letech.study.cmmn.restTemplate.apiClient.FilesApiClient">
+		<property name="restTemplate" ref="restTemplate" />
+	</bean>
+	
 </beans>

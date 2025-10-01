@@ -61,32 +61,6 @@
 					</div>
 				</div>
 			</div>
-<!-- 			<div id="divChangePassword">
-				<input type="button" id="btnChangePassword" name="changePassword" class="btn btn-sm btn-primary" value="비밀번호 변경" onclick="fn_toggleChangePassword()"/>
-				<div id="formSecondCheck">
-					<input type="password" id="secondCheck" class="form-control" />
-					<input type="button" id="cancelChangePassword" class="btn btn-sm btn-outline-primary" value="변경 취소" />
-					<input type="button" id="confirmChangePassword" class="btn btn-sm btn-outline-primary" value="2차 확인" />
-				</div>
-				<div id="formChangePassword">
-					<div class="form-attr">
-						<div class="form-label">
-							<label for="userPw_new">*신규 비밀번호: </label>
-						</div>
-						<div>
-							<input type="password" id="userPw_new" name="userPw_new" class="form-control" />
-						</div>
-					</div>
-					<div class="form-attr">
-						<div class="form-label">
-							<label for="userPw_re">*비밀번호 확인: </label>
-						</div>
-						<div>
-							<input type="password" id="userPw_re" name="userPw_re" class="form-control" />
-						</div>
-					</div>
-				</div>
-			</div> -->
 		</div>
 		<div class="form-attr gap-4">
 			<div class="form-label text-end ">

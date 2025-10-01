@@ -14,6 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import kr.letech.study.cmmn.restTemplate.apiClient.SecurityApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserApiClient;
+import kr.letech.study.cmmn.restTemplate.apiClient.UserRoleApiClient;
 import kr.letech.study.cmmn.sec.service.CustomUserDetailsService;
 import kr.letech.study.cmmn.sec.vo.UserDetailsVO;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 public class UserLoginAuthenticationProvider implements AuthenticationProvider {
 	private final CustomUserDetailsService userDetailsService;
 	private final PasswordEncoder passwordEncoder;
+	private final UserApiClient userApi;
+	private final UserRoleApiClient userRoleApi;
+	private final SecurityApiClient securityApi;
 
 	
 	//로그인처리

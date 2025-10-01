@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService{
 		model.addAttribute("userRoles", userRoles);
 		model.addAttribute("cmmnCodeList", cmmnCodeList);
 		model.addAttribute("userProfileImgSrc", userProfileImgSrc);
-		model.addAttribute("username", loginUser.getUsername());
+		model.addAttribute("username", username);
 		
 		return user; //<--GET userDetail, POST updateUser
 	}
@@ -144,14 +144,13 @@ public class UserServiceImpl implements UserService{
 		return "redirect:/";
 	}
 
-	@Override
-	@Transactional
+	@Override @Transactional
 	public String modifyUser(Model model, UserDetailsVO loginUser, UserVO user, List<String> userRoles, MultipartFile multipart) {
 		log.debug("▩▩▩ UserService .modifyUser() 호출.");
 		
+		String userId = user.getUserId();
 		
 		/** 프로필 첨부기능. */
-		String userId = user.getUserId();
 		if(!multipart.isEmpty()) {
 			log.debug("▩ ----- multipart가 존재한다.");
 			
@@ -170,33 +169,27 @@ public class UserServiceImpl implements UserService{
 		}
 		
 		
-		/** 사용자 등록기능. */
+		/** 사용자 수정기능. */
 		//Security: 암호화된 비밀번호 저장
-		user.setUserPw(passwordEncoder.encode(user.getUserPw()));
+		if(!user.getUserPw().isBlank()) {
+			user.setUserPw(passwordEncoder.encode(user.getUserPw()));
+		}
 		
-//		userDAO.updateUser(user);
-//		
-//		Map<String, Object> forEachParams = new HashMap<>();
-//		forEachParams.put("userId", user.getUserId());
-//		forEachParams.put("rgstId", user.getRgstId());
-//		forEachParams.put("updtId", user.getUpdtId());
-//		forEachParams.put("userRoles", userRoles);
-//		userDAO.mergeUserRole(forEachParams);
-//		userDAO.deleteUserRole(forEachParams);
-		userRoleApi.mergeUserRoles(userId, userRoles, userId);
+		//user에 값이 비어있으면 oldUser 값으로 채워주게끔!!
+		UserVO oldUser = userApi.readUserDetail(userId).getData();
+		user.mergeFrom(oldUser);
 		
-		/*
-		 * Query 안에서 IN() 절이나 foreach 문법을 쓸 일이 없다.
-		 * delete-insert는 보통 물리삭제의 경우에 
-		 */
+		log.info("▩ USER update 시작함");
+		userApi.modifyUser(userId, user, loginUser.getUsername());
+		log.info("▩ USER_ROLE update 시작함");
+		userRoleApi.mergeUserRoles(userId, userRoles, loginUser.getUsername());
 		
-		model.addAttribute("username", loginUser.getUsername());
 		return "redirect:/cmmn/user/detail?userId=" + userId;
 	}
 
 	
 	@Override @Transactional
-	public void removeUser(String userId) {
+	public void removeUser(String userId, UserDetailsVO loginUser) {
 		log.debug("▩▩▩ UserService .removeUser() 호출.");
 		
 		
@@ -211,7 +204,9 @@ public class UserServiceImpl implements UserService{
 		userDAO.deleteUserRole(forEachParams);
 		fileService.removeFile(userId, profileGrpId);
 		
-		userDAO.deleteUser(userId);
+//		userDAO.deleteUser(userId);
+		log.debug("▩ ----- 여기까진 다 왔나??? {}", loginUser.getUsername());
+		userApi.removeUser(userId, loginUser.getUsername());
 	}
 	
 	@Override

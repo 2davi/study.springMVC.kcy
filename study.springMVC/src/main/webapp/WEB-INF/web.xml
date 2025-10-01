@@ -50,7 +50,7 @@
 			</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
-		
+
 		<!-- 0917_첨부파일 기능을 위한 Multipart 설정 등록 -->
 		<multipart-config>
 			<max-file-size>31457280</max-file-size>   <!-- 30mb -->
@@ -73,5 +73,13 @@
 		<filter-name>springSecurityFilterChain</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+<!-- 	<filter>
+		<filter-name>jwtSessionTokenFilter</filter-name>
+		<filter-class>kr.letech.study.cmmn.sec.filter.JwtSessionTokenFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>jwtSessionTokenFilter</filter-name>
+		<url-pattern>/**</url-pattern>
+	</filter-mapping> -->
 
 </web-app>
